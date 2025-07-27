@@ -16,17 +16,18 @@ export default function App() {
           <Route path="/summary" element={<Summary />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
+        <Toaster 
+          position="bottom-center"
+          toastOptions={{
+            style: {
+              background: '#FFF3C4',
+              border: '1px solid #FFA726',
+              color: '#424242',
+              marginBottom: '80px'
+            }
+          }}
+        />
       </Layout>
-      <Toaster 
-        position="top-center"
-        toastOptions={{
-          style: {
-            background: '#FFF3C4',
-            border: '1px solid #FFA726',
-            color: '#424242'
-          }
-        }}
-      />
     </Router>
   );
 }
