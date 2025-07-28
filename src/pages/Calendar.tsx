@@ -74,23 +74,23 @@ export default function Calendar() {
   const totalDays = new Date(year, month + 1, 0).getDate();
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-6 page-slide-in">
       {/* Header */}
-      <div className="flex items-center justify-between py-4">
+      <div className="flex items-center justify-between py-4 fade-in">
         <button
           onClick={() => navigateMonth('prev')}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-300 hover:scale-110 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
           <ChevronLeft size={20} />
         </button>
         
-        <h1 className="text-xl font-semibold text-gray-800">
+        <h1 className="text-xl font-semibold text-gray-800 typewriter">
           {language === 'zh' ? `${year}年${t.calendar.months[month]}` : `${t.calendar.months[month]} ${year}`}
         </h1>
         
         <button
           onClick={() => navigateMonth('next')}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-300 hover:scale-110 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
           <ChevronRight size={20} />
         </button>
@@ -98,26 +98,26 @@ export default function Calendar() {
 
       {/* Statistics */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-orange-50 rounded-xl p-4 text-center">
+        <div className="bg-orange-50 rounded-xl p-4 text-center card-hover fade-in-delay-1">
           <div className="text-2xl font-bold text-orange-600">{completedDays}</div>
           <div className="text-sm text-gray-600">{t.calendar.recorded}</div>
         </div>
-        <div className="bg-blue-50 rounded-xl p-4 text-center">
+        <div className="bg-blue-50 rounded-xl p-4 text-center card-hover fade-in-delay-2">
           <div className="text-2xl font-bold text-blue-600">{totalDays - completedDays}</div>
           <div className="text-sm text-gray-600">{t.calendar.unrecorded}</div>
         </div>
-        <div className="bg-green-50 rounded-xl p-4 text-center">
+        <div className="bg-green-50 rounded-xl p-4 text-center card-hover fade-in-delay-3">
           <div className="text-2xl font-bold text-green-600">{completionRate}%</div>
           <div className="text-sm text-gray-600">{t.calendar.completionRate}</div>
         </div>
       </div>
 
       {/* Calendar Grid */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden card-hover fade-in-delay-1">
         {/* Weekday Headers */}
         <div className="grid grid-cols-7 bg-gray-50">
-          {t.calendar.weekdays.map((day) => (
-            <div key={day} className="p-3 text-center text-sm font-medium text-gray-600">
+          {t.calendar.weekdays.map((day, index) => (
+            <div key={day} className={`p-3 text-center text-sm font-medium text-gray-600 fade-in-delay-${index % 3 + 1}`}>
               {day}
             </div>
           ))}
@@ -131,19 +131,21 @@ export default function Calendar() {
               onClick={() => day.isCurrentMonth && handleDateClick(day.dateStr)}
               disabled={!day.isCurrentMonth}
               className={cn(
-                "aspect-square p-2 text-sm relative transition-colors min-h-[44px] flex items-center justify-center",
+                "aspect-square p-2 text-sm relative transition-all duration-300 min-h-[44px] flex items-center justify-center",
+                "slide-in-up",
                 day.isCurrentMonth
-                  ? "hover:bg-gray-50 cursor-pointer"
+                  ? "hover:bg-gray-50 hover:scale-110 active:scale-95 cursor-pointer"
                   : "text-gray-300 cursor-not-allowed",
-                day.isToday && "bg-orange-100 text-orange-600 font-semibold"
+                day.isToday && "bg-orange-100 text-orange-600 font-semibold pulse"
               )}
+              style={{ animationDelay: `${index * 20}ms` }}
             >
               <span>{day.day}</span>
               
               {/* Entry Indicator */}
               {day.hasEntry && day.isCurrentMonth && (
                 <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                  <div className="w-2 h-2 bg-orange-400 rounded-full pulse"></div>
                 </div>
               )}
             </button>
@@ -152,9 +154,9 @@ export default function Calendar() {
       </div>
 
       {/* Recent Entries */}
-      <div className="space-y-4">
+      <div className="space-y-4 fade-in-delay-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-800">📖 {t.calendar.recentEntries}</h2>
+          <h2 className="text-lg font-semibold text-gray-800 typewriter">📖 {t.calendar.recentEntries}</h2>
           <span className="text-sm text-gray-500">{monthEntries.length} {t.calendar.entriesCount}</span>
         </div>
         
@@ -181,7 +183,7 @@ export default function Calendar() {
                   <div
                     key={entry.id}
                     onClick={() => handleDateClick(entry.date)}
-                    className="bg-gray-50 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="bg-gray-50 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-all duration-300 hover:scale-105 active:scale-95 card-hover"
                   >
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium text-gray-600">{dateStr}</span>

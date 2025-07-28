@@ -4,10 +4,13 @@ import { toast } from 'sonner';
 import useJournalStore from '@/hooks/useJournalStore';
 import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
+import TypewriterText from '@/components/TypewriterText';
 
 export default function Home() {
   const [sentences, setSentences] = useState<[string, string, string]>(['', '', '']);
   const [currentQuote, setCurrentQuote] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [quoteKey, setQuoteKey] = useState(0);
   const { addEntry, updateEntry, getEntry } = useJournalStore();
   const { t, language } = useI18n();
   
@@ -32,6 +35,9 @@ export default function Home() {
   }, [today, getEntry, t.home.motivationalQuotes]);
 
   const refreshQuote = () => {
+    setIsRefreshing(true);
+    
+    // 立即切换内容，不等待动画
     const quotes = t.home.motivationalQuotes;
     const currentIndex = quotes.indexOf(currentQuote);
     let newIndex;
@@ -39,6 +45,12 @@ export default function Home() {
       newIndex = Math.floor(Math.random() * quotes.length);
     } while (newIndex === currentIndex && quotes.length > 1);
     setCurrentQuote(quotes[newIndex]);
+    setQuoteKey(prev => prev + 1); // 触发新的打字动画
+    
+    // 保持旋转动画效果，但不影响内容切换
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 800);
   };
 
   const handleSentenceChange = (index: number, value: string) => {
@@ -70,53 +82,80 @@ export default function Home() {
   const filledCount = sentences.filter(s => s.trim().length > 0).length;
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-6 page-slide-in">
       {/* Date Header */}
-      <div className="text-center py-4">
+      <div className="text-center py-4 fade-in">
         <h1 className="text-lg font-medium text-gray-800">{todayFormatted}</h1>
       </div>
 
       {/* Daily Quote Banner */}
-      <div className="bg-gradient-to-r from-orange-400 to-orange-500 rounded-2xl p-6 text-center text-white shadow-lg relative">
-        <Quote className="mx-auto mb-3" size={24} />
-        <p className="text-lg font-medium mb-3">{currentQuote}</p>
+      <div className="bg-gradient-to-r from-orange-400 to-orange-500 rounded-2xl p-6 text-center text-white shadow-lg relative card-hover gradient-shift fade-in-delay-1">
+        <Quote className="mx-auto mb-3 float" size={24} />
+        <div className="text-lg font-medium mb-3 min-h-[3rem] flex items-center justify-center">
+          {currentQuote && (
+            <TypewriterText
+              key={quoteKey}
+              text={currentQuote}
+              speed={60}
+              delay={200}
+              className="text-center"
+            />
+          )}
+        </div>
         <button
           onClick={refreshQuote}
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/20 transition-colors"
+          className={cn(
+            "absolute top-4 right-4 p-2 rounded-full hover:bg-white/20 transition-all duration-300",
+            isRefreshing ? "spin-refresh" : "hover:scale-110"
+          )}
           title={t.home.refreshQuote}
+          disabled={isRefreshing}
         >
           <RefreshCw size={18} />
         </button>
       </div>
 
       {/* Three Sentence Input Section */}
-      <div className="space-y-4">
+      <div className="space-y-4 fade-in-delay-2">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            ✏️ {t.home.todayThreeSentences}
+            <span className="wiggle">✏️</span> {t.home.todayThreeSentences}
           </h2>
-          <span className="text-sm text-gray-500">{filledCount}/3</span>
+          <span className={cn(
+            "text-sm text-gray-500 count-up",
+            filledCount > 0 ? "text-orange-600 font-medium" : ""
+          )}>
+            {filledCount}/3
+          </span>
         </div>
         
         {sentences.map((sentence, index) => (
-          <div key={index} className="space-y-2">
+          <div key={index} className={cn(
+            "space-y-2 slide-in-up",
+            `fade-in-delay-${index + 1}`
+          )}>
             <textarea
               value={sentence}
               onChange={(e) => handleSentenceChange(index, e.target.value)}
               placeholder={t.home.placeholders[index]}
               className={cn(
-                "w-full p-4 border-2 rounded-xl resize-none transition-colors",
+                "w-full p-4 border-2 rounded-xl resize-none transition-all duration-300 input-focus",
                 "focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100",
                 sentence.trim().length > 0 
-                  ? "border-orange-300 bg-orange-50" 
-                  : "border-gray-200 bg-white"
+                  ? "border-orange-300 bg-orange-50 shadow-sm" 
+                  : "border-gray-200 bg-white hover:border-gray-300"
               )}
               rows={3}
               maxLength={40}
             />
             <div className="flex justify-between text-xs text-gray-500">
               <span>{t.home.sentenceLabel.replace('{index}', (index + 1).toString())}</span>
-              <span>{sentence.length}/40</span>
+              <span className={cn(
+                "transition-colors",
+                sentence.length > 35 ? "text-orange-500 font-medium" : ""
+              )}>
+                {sentence.length}/40
+              </span>
             </div>
           </div>
         ))}
@@ -125,9 +164,13 @@ export default function Home() {
       {/* Save Button */}
       <button
         onClick={handleSave}
-        className="w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 min-h-[44px]"
+        className={cn(
+          "w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white py-4 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300 flex items-center justify-center gap-2 min-h-[44px] fade-in-delay-3",
+          "hover:shadow-xl hover:scale-105 active:scale-95",
+          filledCount > 0 ? "pulse" : ""
+        )}
       >
-        <Save size={20} />
+        <Save size={20} className={filledCount > 0 ? "bounce" : ""} />
         {t.home.save}
       </button>
 

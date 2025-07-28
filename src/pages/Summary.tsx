@@ -5,6 +5,7 @@ import useJournalStore from '@/hooks/useJournalStore';
 import { generateWeeklySummary, generateMoodInsight } from '@/services/geminiApi';
 import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
+import TypewriterText from '@/components/TypewriterText';
 
 interface MoodAnalysis {
   positive: number;
@@ -81,6 +82,8 @@ export default function Summary() {
   const [moodInsight, setMoodInsight] = useState<string>('');
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
   const [isLoadingMood, setIsLoadingMood] = useState(false);
+  const [isRefreshingSummary, setIsRefreshingSummary] = useState(false);
+  const [isRefreshingMood, setIsRefreshingMood] = useState(false);
   
   const weekRange = useMemo(() => getWeekRange(currentWeekStart), [currentWeekStart]);
   
@@ -224,13 +227,62 @@ export default function Summary() {
   };
 
   // 重新生成AI总结
-  const handleRegenerateSummary = () => {
-    generateAISummary();
+  const handleRegenerateSummary = async () => {
+    if (weekEntries.length === 0) return;
+    
+    setIsRefreshingSummary(true);
+    setIsLoadingSummary(true);
+    
+    try {
+      const summary = await generateWeeklySummary(weekEntries, language);
+      setAiSummary(summary);
+      
+      // 保存到本地存储
+      const weekStartStr = weekRange.start.toISOString().split('T')[0];
+      const storageKey = getStorageKey('summary', weekStartStr);
+      const entriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences })));
+      
+      localStorage.setItem(storageKey, JSON.stringify({
+        summary,
+        timestamp: Date.now(),
+        entriesHash
+      }));
+    } catch (error) {
+      console.error('Failed to regenerate AI summary:', error);
+      toast.error(t?.summary?.summaryGenerationFailed || 'AI总结生成失败，请稍后重试');
+    } finally {
+      setIsLoadingSummary(false);
+      setTimeout(() => setIsRefreshingSummary(false), 800);
+    }
   };
 
   // 重新生成情绪洞察
-  const handleRegenerateMoodInsight = () => {
-    generateMoodAnalysis();
+  const handleRegenerateMoodInsight = async () => {
+    if (weekEntries.length === 0) return;
+    
+    setIsRefreshingMood(true);
+    setIsLoadingMood(true);
+    
+    try {
+      const insight = await generateMoodInsight(weekEntries, language);
+      setMoodInsight(insight);
+      
+      // 保存到本地存储
+      const weekStartStr = weekRange.start.toISOString().split('T')[0];
+      const storageKey = getStorageKey('mood', weekStartStr);
+      const entriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences })));
+      
+      localStorage.setItem(storageKey, JSON.stringify({
+        insight,
+        timestamp: Date.now(),
+        entriesHash
+      }));
+    } catch (error) {
+      console.error('Failed to regenerate mood insight:', error);
+    } finally {
+      setIsLoadingMood(false);
+      setTimeout(() => setIsRefreshingMood(false), 800);
+    }
   };
   
   const navigateWeek = (direction: 'prev' | 'next') => {
@@ -271,45 +323,45 @@ export default function Summary() {
     : `${weekRange.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekRange.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
   
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-6 page-slide-in">
       {/* Header */}
-      <div className="flex items-center justify-between py-4">
+      <div className="flex items-center justify-between py-4 fade-in">
         <button
           onClick={() => navigateWeek('prev')}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-300 hover:scale-110 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
           <ChevronLeft size={20} />
         </button>
         
         <div className="text-center">
-          <h1 className="text-lg font-semibold text-gray-800">📊 {t?.summary?.title || '周总结'}</h1>
-          <p className="text-sm text-gray-500">{weekRangeText}</p>
+          <h1 className="text-lg font-semibold text-gray-800 typewriter">📊 {t?.summary?.title || '周总结'}</h1>
+          <p className="text-sm text-gray-500 fade-in-delay-1">{weekRangeText}</p>
         </div>
         
         <button
           onClick={() => navigateWeek('next')}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-300 hover:scale-110 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
           <ChevronRight size={20} />
         </button>
       </div>
 
       {/* Weekly Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-orange-50 rounded-xl p-4 text-center">
-          <div className="text-2xl font-bold text-orange-600">{weekEntries.length}</div>
+      <div className="grid grid-cols-3 gap-4 mb-6 fade-in-delay-1">
+        <div className="bg-orange-50 rounded-xl p-4 text-center card-hover slide-in-up">
+          <div className="text-2xl font-bold text-orange-600 count-up">{weekEntries.length}</div>
           <div className="text-sm text-gray-600">{t?.summary?.recordedDays || '记录天数'}</div>
         </div>
-        <div className="bg-blue-50 rounded-xl p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600">
+        <div className="bg-blue-50 rounded-xl p-4 text-center card-hover slide-in-up fade-in-delay-1">
+          <div className="text-2xl font-bold text-blue-600 count-up">
             {weekEntries.reduce((sum, entry) => 
               sum + entry.sentences.filter((s: string) => s.trim().length > 0).length, 0
             )}
           </div>
           <div className="text-sm text-gray-600">{t?.summary?.totalSentences || '总句数'}</div>
         </div>
-        <div className="bg-green-50 rounded-xl p-4 text-center">
-          <div className="text-2xl font-bold text-green-600">
+        <div className="bg-green-50 rounded-xl p-4 text-center card-hover slide-in-up fade-in-delay-2">
+          <div className="text-2xl font-bold text-green-600 count-up">
             {Math.round((weekEntries.length / 7) * 100)}%
           </div>
           <div className="text-sm text-gray-600">{t?.summary?.completionRate || '完成率'}</div>
@@ -336,9 +388,18 @@ export default function Summary() {
           </div>
         ) : (
           <>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              {aiSummary || t?.summary?.noSummaryYet || '暂无总结内容'}
-            </p>
+            {aiSummary ? (
+              <TypewriterText
+                text={aiSummary}
+                speed={40}
+                delay={200}
+                className="text-gray-700 leading-relaxed mb-4 block"
+              />
+            ) : (
+              <p className="text-gray-700 leading-relaxed mb-4">
+                {t?.summary?.noSummaryYet || '暂无总结内容'}
+              </p>
+            )}
             
             <div className="flex items-center justify-between">
               <button
@@ -353,8 +414,12 @@ export default function Summary() {
               {!isLoadingSummary && aiSummary && weekEntries.length > 0 && (
                 <button
                   onClick={handleRegenerateSummary}
-                  className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                  className={cn(
+                    "p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-300 hover:scale-110",
+                    isRefreshingSummary ? "spin-refresh" : ""
+                  )}
                   title={t?.summary?.regenerate || '重新生成总结'}
+                  disabled={isRefreshingSummary}
                 >
                   <RefreshCw size={16} />
                 </button>
@@ -388,14 +453,27 @@ export default function Summary() {
             ) : (
               <>
                 <div className="flex items-start justify-between">
-                  <p className="text-sm text-blue-700 leading-relaxed flex-1">
-                    {moodInsight || t?.summary?.noInsightYet || '正在分析你的情绪变化...'}
-                  </p>
+                  {moodInsight ? (
+                    <TypewriterText
+                      text={moodInsight}
+                      speed={40}
+                      delay={200}
+                      className="text-sm text-blue-700 leading-relaxed flex-1 block"
+                    />
+                  ) : (
+                    <p className="text-sm text-blue-700 leading-relaxed flex-1">
+                      {t?.summary?.noInsightYet || '正在分析你的情绪变化...'}
+                    </p>
+                  )}
                   {!isLoadingMood && moodInsight && weekEntries.length > 0 && (
                     <button
                       onClick={handleRegenerateMoodInsight}
-                      className="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors ml-2 flex-shrink-0"
+                      className={cn(
+                        "p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg transition-all duration-300 ml-2 flex-shrink-0 hover:scale-110",
+                        isRefreshingMood ? "spin-refresh" : ""
+                      )}
                       title={t?.summary?.regenerate || '重新生成情绪洞察'}
+                      disabled={isRefreshingMood}
                     >
                       <RefreshCw size={14} />
                     </button>

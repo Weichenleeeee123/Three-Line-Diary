@@ -204,39 +204,39 @@ export default function Profile() {
   };
   
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-6 page-slide-in">
       {/* Header */}
-      <div className="text-center py-6">
-        <div className="w-20 h-20 bg-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+      <div className="text-center py-6 fade-in">
+        <div className="w-20 h-20 bg-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center float">
           <User className="text-white" size={32} />
         </div>
-        <h1 className="text-xl font-semibold text-gray-800">{t?.profile?.userProfile || '三句日记用户'}</h1>
-        <p className="text-gray-500 text-sm mt-1">{t?.profile?.manageSettings || '记录生活，感受成长'}</p>
+        <h1 className="text-xl font-semibold text-gray-800 typewriter">{t?.profile?.userProfile || '三句日记用户'}</h1>
+        <p className="text-gray-500 text-sm mt-1 fade-in-delay-1">{t?.profile?.manageSettings || '记录生活，感受成长'}</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-orange-50 rounded-xl p-4 text-center">
-          <Calendar className="mx-auto mb-2 text-orange-600" size={24} />
-          <div className="text-2xl font-bold text-orange-600">{stats.totalDays}</div>
+      <div className="grid grid-cols-2 gap-4 fade-in-delay-1">
+        <div className="bg-orange-50 rounded-xl p-4 text-center card-hover slide-in-up">
+          <Calendar className="mx-auto mb-2 text-orange-600 bounce" size={24} />
+          <div className="text-2xl font-bold text-orange-600 count-up">{stats.totalDays}</div>
           <div className="text-sm text-gray-600">{t?.profile?.stats?.totalDays || '总天数'}</div>
         </div>
         
-        <div className="bg-blue-50 rounded-xl p-4 text-center">
-          <PenTool className="mx-auto mb-2 text-blue-600" size={24} />
-          <div className="text-2xl font-bold text-blue-600">{stats.totalSentences}</div>
+        <div className="bg-blue-50 rounded-xl p-4 text-center card-hover slide-in-up fade-in-delay-1">
+          <PenTool className="mx-auto mb-2 text-blue-600 wiggle" size={24} />
+          <div className="text-2xl font-bold text-blue-600 count-up">{stats.totalSentences}</div>
           <div className="text-sm text-gray-600">{t?.profile?.stats?.totalSentences || '总句数'}</div>
         </div>
         
-        <div className="bg-green-50 rounded-xl p-4 text-center">
-          <Flame className="mx-auto mb-2 text-green-600" size={24} />
-          <div className="text-2xl font-bold text-green-600">{stats.currentStreak}</div>
+        <div className="bg-green-50 rounded-xl p-4 text-center card-hover slide-in-up fade-in-delay-2">
+          <Flame className="mx-auto mb-2 text-green-600 pulse" size={24} />
+          <div className="text-2xl font-bold text-green-600 count-up">{stats.currentStreak}</div>
           <div className="text-sm text-gray-600">{t?.profile?.stats?.currentStreak || '连续'}</div>
         </div>
         
-        <div className="bg-purple-50 rounded-xl p-4 text-center">
-          <Target className="mx-auto mb-2 text-purple-600" size={24} />
-          <div className="text-2xl font-bold text-purple-600">{stats.completionRate}%</div>
+        <div className="bg-purple-50 rounded-xl p-4 text-center card-hover slide-in-up fade-in-delay-3">
+          <Target className="mx-auto mb-2 text-purple-600 float" size={24} />
+          <div className="text-2xl font-bold text-purple-600 count-up">{stats.completionRate}%</div>
           <div className="text-sm text-gray-600">{t?.profile?.stats?.completionRate || '完成率'}</div>
         </div>
       </div>
@@ -313,9 +313,9 @@ export default function Profile() {
           </div>
           
           {/* 语言设置 */}
-          <div className="p-4 bg-gray-50 rounded-lg">
+          <div className="p-4 bg-gray-50 rounded-lg card-hover fade-in-delay-1">
             <div className="flex items-center gap-3 mb-3">
-              <Globe className="text-gray-600" size={20} />
+              <Globe className="text-gray-600 wiggle" size={20} />
               <div>
                 <h3 className="font-medium text-gray-800">{t?.profile?.languageSettings || '语言设置'}</h3>
                 <p className="text-sm text-gray-600">{t?.profile?.languageSettingsDesc || '选择应用语言'}</p>
@@ -324,7 +324,7 @@ export default function Profile() {
             <div className="flex gap-2">
               <button
                 onClick={() => setLanguage('zh')}
-                className={`px-3 py-2 rounded-md text-sm transition-colors ${
+                className={`px-3 py-2 rounded-md text-sm transition-all duration-300 hover:scale-105 active:scale-95 button-press ${
                   language === 'zh' 
                     ? 'bg-blue-100 text-blue-700 border border-blue-300' 
                     : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
@@ -334,7 +334,7 @@ export default function Profile() {
               </button>
               <button
                 onClick={() => setLanguage('en')}
-                className={`px-3 py-2 rounded-md text-sm transition-colors ${
+                className={`px-3 py-2 rounded-md text-sm transition-all duration-300 hover:scale-105 active:scale-95 button-press ${
                   language === 'en' 
                     ? 'bg-blue-100 text-blue-700 border border-blue-300' 
                     : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
@@ -348,10 +348,10 @@ export default function Profile() {
           {/* Data Backup */}
           <button 
             onClick={handleExportData}
-            className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 w-full text-left hover:bg-gray-50 transition-colors"
+            className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 w-full text-left hover:bg-gray-50 transition-all duration-300 hover:scale-105 active:scale-95 button-press card-hover"
           >
             <div className="flex items-center gap-3">
-              <Download className="text-gray-600" size={20} />
+              <Download className="text-gray-600 bounce" size={20} />
               <div>
                 <h3 className="font-medium text-gray-800">{t?.profile?.dataBackup || '数据备份'}</h3>
                 <p className="text-sm text-gray-600">{t?.profile?.dataBackupDesc || '导出你的日记数据'}</p>
@@ -363,10 +363,10 @@ export default function Profile() {
           {/* Data Import */}
           <button 
             onClick={handleImportData}
-            className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 w-full text-left hover:bg-gray-50 transition-colors"
+            className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 w-full text-left hover:bg-gray-50 transition-all duration-300 hover:scale-105 active:scale-95 button-press card-hover"
           >
             <div className="flex items-center gap-3">
-              <Upload className="text-gray-600" size={20} />
+              <Upload className="text-gray-600 bounce" size={20} />
               <div>
                 <h3 className="font-medium text-gray-800">{t?.profile?.importData || '导入数据'}</h3>
                 <p className="text-sm text-gray-600">{t?.profile?.importDataDesc || '从备份文件恢复数据'}</p>
@@ -380,10 +380,10 @@ export default function Profile() {
           {/* Generate Mock Data */}
           <button 
             onClick={handleGenerateMockData}
-            className="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-200 w-full text-left hover:bg-blue-100 transition-colors"
+            className="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-200 w-full text-left hover:bg-blue-100 transition-all duration-300 hover:scale-105 active:scale-95 button-press card-hover"
           >
             <div className="flex items-center gap-3">
-              <Database className="text-blue-600" size={20} />
+              <Database className="text-blue-600 pulse" size={20} />
               <div>
                 <h3 className="font-medium text-blue-800">{t?.profile?.generateMockData || '生成模拟数据'}</h3>
                 <p className="text-sm text-blue-600">{t?.profile?.generateMockDataDesc || '生成过去30天的示例日记'}</p>
@@ -395,10 +395,10 @@ export default function Profile() {
           {/* Clear All Data */}
            <button 
              onClick={() => setShowClearConfirm(true)}
-             className="flex items-center justify-between p-4 bg-white rounded-xl border border-red-100 w-full text-left hover:bg-red-50 transition-colors"
+             className="flex items-center justify-between p-4 bg-white rounded-xl border border-red-100 w-full text-left hover:bg-red-50 transition-all duration-300 hover:scale-105 active:scale-95 button-press card-hover"
            >
              <div className="flex items-center gap-3">
-               <Trash2 className="text-red-600" size={20} />
+               <Trash2 className="text-red-600 wiggle" size={20} />
                <div>
                  <h3 className="font-medium text-red-800">{t?.profile?.clearAllData || '清空所有数据'}</h3>
                  <p className="text-sm text-red-600">{t?.profile?.clearAllDataDesc || '删除所有日记记录'}</p>
@@ -417,8 +417,8 @@ export default function Profile() {
       
       {/* 确认删除对话框 */}
       {showClearConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 fade-in">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4 slide-in-up">
             <div className="flex items-center gap-3 mb-4">
               <AlertTriangle className="text-red-500" size={24} />
               <h3 className="text-lg font-semibold text-gray-900">{t?.profile?.confirmClearData || '确认清空数据'}</h3>
@@ -427,13 +427,13 @@ export default function Profile() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowClearConfirm(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-all duration-300 hover:scale-105 active:scale-95 button-press"
               >
                 {t?.profile?.cancel || '取消'}
               </button>
               <button
                  onClick={handleClearData}
-                 className="flex-1 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+                 className="flex-1 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all duration-300 hover:scale-105 active:scale-95 button-press"
                >
                  {t?.profile?.confirm || '确认'}
                </button>
