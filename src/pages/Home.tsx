@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Quote, RefreshCw } from 'lucide-react';
+import { Save, Quote, RefreshCw, Camera, Image, X } from 'lucide-react';
 import { toast } from 'sonner';
 import useJournalStore from '@/hooks/useJournalStore';
 import { useI18n } from '@/hooks/useI18n';
@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import TypewriterText from '@/components/TypewriterText';
 import CelebrationModal from '@/components/CelebrationModal';
 import { playDiarySaveSound, preloadSounds } from '@/services/soundService';
+import { compressImage, validateImageFile, validateImageSize, selectImage } from '@/utils/imageUtils';
 
 
 export default function Home() {
@@ -16,6 +17,8 @@ export default function Home() {
   const [quoteKey, setQuoteKey] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
   const [isFirstTimeToday, setIsFirstTimeToday] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
   const { addEntry, updateEntry, getEntry } = useJournalStore();
   const { t, language } = useI18n();
   
@@ -36,6 +39,7 @@ export default function Home() {
     const existingEntry = getEntry(today);
     if (existingEntry) {
       setSentences(existingEntry.sentences);
+      setSelectedImage(existingEntry.image || null);
     }
 
     // Preload sounds for better performance
@@ -69,6 +73,40 @@ export default function Home() {
     }
   };
 
+  const handleImageSelect = async () => {
+    try {
+      setIsProcessingImage(true);
+      const file = await selectImage();
+      
+      // 验证文件
+      if (!validateImageFile(file)) {
+        toast.error(t.home.photoFormatError);
+        return;
+      }
+      
+      if (!validateImageSize(file)) {
+        toast.error(t.home.photoTooLarge);
+        return;
+      }
+      
+      // 压缩图片
+      const compressedImage = await compressImage(file);
+      setSelectedImage(compressedImage);
+      toast.success(t.home.photoAdded);
+    } catch (error) {
+      if (error instanceof Error && error.message !== '用户取消选择') {
+        toast.error(t.home.photoError);
+      }
+    } finally {
+      setIsProcessingImage(false);
+    }
+  };
+
+  const handleImageRemove = () => {
+    setSelectedImage(null);
+    toast.success(t.home.photoRemoved);
+  };
+
   const handleSave = () => {
     const hasContent = sentences.some(sentence => sentence.trim().length > 0);
     
@@ -81,12 +119,12 @@ export default function Home() {
     const isFirstTime = !existingEntry;
     
     if (existingEntry) {
-      updateEntry(today, sentences);
+      updateEntry(today, sentences, selectedImage || undefined);
       toast.success(t.home.updated);
       // Play sound effect for updates
       playDiarySaveSound();
     } else {
-      addEntry(today, sentences);
+      addEntry(today, sentences, selectedImage || undefined);
       toast.success(t.home.saved);
       setIsFirstTimeToday(isFirstTime);
       setShowCelebration(true);
@@ -187,6 +225,65 @@ export default function Home() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Photo Section */}
+      <div className="space-y-4 fade-in-delay-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <span className="wiggle">📷</span> {t.home.addPhoto}
+          </h3>
+          {selectedImage && (
+            <button
+              onClick={handleImageRemove}
+              className="text-red-500 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50"
+              title={t.home.removePhoto}
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
+        
+        {selectedImage ? (
+          <div className="relative group">
+            <img
+              src={selectedImage}
+              alt="Selected photo"
+              className="w-full h-48 object-contain rounded-xl shadow-lg transition-all duration-300 group-hover:shadow-xl bg-gray-50"
+            />
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-xl flex items-center justify-center">
+              <button
+                onClick={handleImageSelect}
+                disabled={isProcessingImage}
+                className="opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white text-gray-800 px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 font-medium"
+              >
+                {isProcessingImage ? '处理中...' : t.home.changePhoto}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={handleImageSelect}
+            disabled={isProcessingImage}
+            className={cn(
+              "w-full h-32 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-3 transition-all duration-300 hover:border-orange-400 hover:bg-orange-50 active:scale-95",
+              isProcessingImage ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+            )}
+          >
+            {isProcessingImage ? (
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm text-gray-600">处理中...</span>
+              </div>
+            ) : (
+              <>
+                <Camera size={32} className="text-gray-400" />
+                <span className="text-gray-600 font-medium">{t.home.addPhoto}</span>
+                <span className="text-xs text-gray-500">点击添加照片记录美好时刻</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Save Button */}

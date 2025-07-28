@@ -34,6 +34,16 @@ const translations = {
         '今天感受如何？',
         '今天学到了什么？'
       ],
+      addPhoto: '添加照片',
+      changePhoto: '更换照片',
+      removePhoto: '移除照片',
+      photoAdded: '照片已添加',
+      photoRemoved: '照片已移除',
+      photoError: '照片处理失败',
+      photoTooLarge: '照片文件过大，请选择小于10MB的图片',
+      photoFormatError: '不支持的图片格式，请选择JPG、PNG或WebP格式',
+      selectFromCamera: '拍照',
+      selectFromGallery: '从相册选择',
       sentenceLabel: '第{index}句',
       motivationalQuotes: [
         '今天的心情如何呢？ 😊',
@@ -64,6 +74,7 @@ const translations = {
       title: '日历',
       noEntry: '暂无记录',
       hasEntry: '已记录',
+      hasPhoto: '有照片',
       viewEntry: '查看记录',
       noEntries: '暂无记录',
       clickToAdd: '点击日期添加记录',
@@ -135,16 +146,7 @@ const translations = {
         'hundred-club': '百日俱乐部',
         'sentence-master': '文字大师'
       },
-      achievementModal: {
-        unlocked: '🎉 成就解锁！',
-        awesome: '太棒了！'
-      },
-      celebrationModal: {
-        awesome: '太棒了！',
-        saved: '今日记录已保存',
-        firstTimeMessage: '🎉 恭喜你开始了记录之旅！坚持下去，你会发现生活中更多美好的瞬间。',
-        continueRecording: '继续记录'
-      },
+
       achievementDescriptions: {
         'first-entry': '写下第一篇日记',
         'week-warrior': '连续记录7天',
@@ -197,6 +199,20 @@ const translations = {
       }
     },
     
+    // 成就模态框
+    achievementModal: {
+      unlocked: '🎉 成就解锁！',
+      awesome: '太棒了！'
+    },
+    
+    // 庆祝模态框
+    celebrationModal: {
+      awesome: '太棒了！',
+      saved: '今日记录已保存',
+      firstTimeMessage: '🎉 恭喜你开始了记录之旅！坚持下去，你会发现生活中更多美好的瞬间。',
+      continueRecording: '继续记录'
+    },
+    
     // 导航
     navigation: {
       home: '首页',
@@ -232,6 +248,17 @@ const translations = {
       updated: 'Diary updated!',
       saved: 'Diary saved!',
       refreshQuote: 'Refresh quote',
+      addPhoto: 'Add Photo',
+      changePhoto: 'Change Photo',
+      removePhoto: 'Remove Photo',
+      photoAdded: 'Photo added successfully',
+      photoRemoved: 'Photo removed successfully',
+      photoError: 'Photo processing failed',
+      photoTooLarge: 'Photo size too large, please select a photo under 5MB',
+      photoFormatError: 'Unsupported photo format, please select JPG, PNG or WebP format',
+      selectFromCamera: 'Take Photo',
+      selectFromGallery: 'Select from Gallery',
+      hasPhoto: 'Has Photo',
       placeholders: [
         'What did you do today?',
         'How did you feel today?',
@@ -267,6 +294,7 @@ const translations = {
       title: 'Calendar',
       noEntry: 'No entry',
       hasEntry: 'Recorded',
+      hasPhoto: 'Has Photo',
       viewEntry: 'View entry',
       noEntries: 'No entries',
       clickToAdd: 'Click date to add entry',
@@ -338,16 +366,7 @@ const translations = {
         'hundred-club': 'Hundred Club',
         'sentence-master': 'Sentence Master'
       },
-      achievementModal: {
-         unlocked: '🎉 Achievement Unlocked!',
-         awesome: 'Awesome!'
-       },
-       celebrationModal: {
-         awesome: 'Awesome!',
-         saved: 'Today\'s record saved',
-         firstTimeMessage: '🎉 Congratulations on starting your recording journey! Keep it up and you\'ll discover more beautiful moments in life.',
-         continueRecording: 'Continue Recording'
-       },
+
       achievementDescriptions: {
         'first-entry': 'Write your first diary entry',
         'week-warrior': 'Record for 7 consecutive days',
@@ -398,6 +417,20 @@ const translations = {
           sentence3: 'Feeling happy'
         }
       }
+    },
+    
+    // Achievement Modal
+    achievementModal: {
+      unlocked: '🎉 Achievement Unlocked!',
+      awesome: 'Awesome!'
+    },
+    
+    // Celebration Modal
+    celebrationModal: {
+      awesome: 'Awesome!',
+      saved: 'Today\'s record saved',
+      firstTimeMessage: '🎉 Congratulations on starting your recording journey! Keep it up and you\'ll discover more beautiful moments in life.',
+      continueRecording: 'Continue Recording'
     },
     
     // Navigation

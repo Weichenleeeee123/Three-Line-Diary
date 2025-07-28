@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Edit3 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit3, Camera } from 'lucide-react';
 import useJournalStore from '@/hooks/useJournalStore';
 import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
@@ -33,6 +33,8 @@ export default function Calendar() {
       const isCurrentMonth = current.getMonth() === month;
       const isToday = dateStr === new Date().toISOString().split('T')[0];
       const hasEntry = hasEntryForDate(dateStr);
+      const entry = monthEntries.find(e => e.date === dateStr);
+      const hasPhoto = entry?.image ? true : false;
 
       days.push({
         date: new Date(current),
@@ -40,7 +42,8 @@ export default function Calendar() {
         day: current.getDate(),
         isCurrentMonth,
         isToday,
-        hasEntry
+        hasEntry,
+        hasPhoto
       });
 
       current.setDate(current.getDate() + 1);
@@ -146,10 +149,15 @@ export default function Calendar() {
             >
               <span>{day.day}</span>
               
-              {/* Entry Indicator */}
+              {/* Entry Indicators */}
               {day.hasEntry && day.isCurrentMonth && (
-                <div className="absolute -top-1 -right-1">
+                <div className="absolute -top-1 -right-1 flex gap-1">
                   <div className="w-3 h-3 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full shadow-lg pulse"></div>
+                  {day.hasPhoto && (
+                    <div className="w-3 h-3 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full shadow-lg pulse flex items-center justify-center">
+                      <Camera size={8} className="text-white" />
+                    </div>
+                  )}
                 </div>
               )}
             </button>
@@ -193,6 +201,11 @@ export default function Calendar() {
                       <span className="text-sm font-bold text-gray-700">{dateStr}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded-full">{filledSentences.length}/3</span>
+                        {entry.image && (
+                          <div className="w-5 h-5 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full flex items-center justify-center" title="包含照片">
+                            <Camera size={10} className="text-white" />
+                          </div>
+                        )}
                         <Edit3 size={14} className="text-orange-500" />
                       </div>
                     </div>

@@ -84,6 +84,8 @@ export default function Summary() {
   const [isLoadingMood, setIsLoadingMood] = useState(false);
   const [isRefreshingSummary, setIsRefreshingSummary] = useState(false);
   const [isRefreshingMood, setIsRefreshingMood] = useState(false);
+  const [summaryError, setSummaryError] = useState<string>('');
+  const [moodError, setMoodError] = useState<string>('');
   
   const weekRange = useMemo(() => getWeekRange(currentWeekStart), [currentWeekStart]);
   
@@ -117,7 +119,7 @@ export default function Summary() {
       const stored = localStorage.getItem(storageKey);
       if (stored) {
         const { summary, timestamp, entriesHash } = JSON.parse(stored);
-        const currentEntriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences })));
+        const currentEntriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences, image: e.image })));
         
         // 如果数据没有过期且条目没有变化，使用缓存的总结
         if (!isDataStale(timestamp) && entriesHash === currentEntriesHash) {
@@ -151,7 +153,7 @@ export default function Summary() {
       const stored = localStorage.getItem(storageKey);
       if (stored) {
         const { insight, timestamp, entriesHash } = JSON.parse(stored);
-        const currentEntriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences })));
+        const currentEntriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences, image: e.image })));
         
         // 如果数据没有过期且条目没有变化，使用缓存的洞察
         if (!isDataStale(timestamp) && entriesHash === currentEntriesHash) {
@@ -171,18 +173,21 @@ export default function Summary() {
   const generateAISummary = async () => {
     if (weekEntries.length === 0) {
       setAiSummary('');
+      setSummaryError('');
       return;
     }
     
     setIsLoadingSummary(true);
+    setSummaryError('');
     try {
       const summary = await generateWeeklySummary(weekEntries, language);
       setAiSummary(summary);
+      setSummaryError('');
       
       // 保存到本地存储
       const weekStartStr = weekRange.start.toISOString().split('T')[0];
       const storageKey = getStorageKey('summary', weekStartStr);
-      const entriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences })));
+      const entriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences, image: e.image })));
       
       localStorage.setItem(storageKey, JSON.stringify({
         summary,
@@ -191,7 +196,9 @@ export default function Summary() {
       }));
     } catch (error) {
       console.error('Failed to generate AI summary:', error);
-      toast.error(t?.summary?.summaryGenerationFailed || 'AI总结生成失败，请稍后重试');
+      const errorMessage = error instanceof Error ? error.message : (t?.summary?.summaryGenerationFailed || 'AI总结生成失败，请稍后重试');
+      setSummaryError(errorMessage);
+      setAiSummary('');
     } finally {
       setIsLoadingSummary(false);
     }
@@ -201,18 +208,21 @@ export default function Summary() {
   const generateMoodAnalysis = async () => {
     if (weekEntries.length === 0) {
       setMoodInsight('');
+      setMoodError('');
       return;
     }
     
     setIsLoadingMood(true);
+    setMoodError('');
     try {
       const insight = await generateMoodInsight(weekEntries, language);
       setMoodInsight(insight);
+      setMoodError('');
       
       // 保存到本地存储
       const weekStartStr = weekRange.start.toISOString().split('T')[0];
       const storageKey = getStorageKey('mood', weekStartStr);
-      const entriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences })));
+      const entriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences, image: e.image })));
       
       localStorage.setItem(storageKey, JSON.stringify({
         insight,
@@ -221,6 +231,9 @@ export default function Summary() {
       }));
     } catch (error) {
       console.error('Failed to generate mood insight:', error);
+      const errorMessage = error instanceof Error ? error.message : (language === 'zh' ? '情绪洞察生成失败，请稍后重试' : 'Mood insight generation failed, please try again later');
+      setMoodError(errorMessage);
+      setMoodInsight('');
     } finally {
       setIsLoadingMood(false);
     }
@@ -240,7 +253,7 @@ export default function Summary() {
       // 保存到本地存储
       const weekStartStr = weekRange.start.toISOString().split('T')[0];
       const storageKey = getStorageKey('summary', weekStartStr);
-      const entriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences })));
+      const entriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences, image: e.image })));
       
       localStorage.setItem(storageKey, JSON.stringify({
         summary,
@@ -270,7 +283,7 @@ export default function Summary() {
       // 保存到本地存储
       const weekStartStr = weekRange.start.toISOString().split('T')[0];
       const storageKey = getStorageKey('mood', weekStartStr);
-      const entriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences })));
+      const entriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences, image: e.image })));
       
       localStorage.setItem(storageKey, JSON.stringify({
         insight,
@@ -386,6 +399,21 @@ export default function Summary() {
             <Loader2 className="animate-spin text-orange-500" size={24} />
             <span className="ml-2 text-gray-600">{t?.summary?.aiAnalyzing || 'AI正在为你生成专属总结...'}</span>
           </div>
+        ) : summaryError ? (
+          <div className="py-6">
+            <div className="text-center text-red-600 mb-4">
+              <p className="text-sm">{summaryError}</p>
+            </div>
+            <div className="flex justify-center">
+              <button
+                onClick={handleRegenerateSummary}
+                className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
+              >
+                <RefreshCw size={16} />
+                {t?.summary?.retry || '重试'}
+              </button>
+            </div>
+          </div>
         ) : (
           <>
             {aiSummary ? (
@@ -449,6 +477,17 @@ export default function Summary() {
               <div className="flex items-center gap-2 text-blue-600">
                 <Loader2 className="animate-spin" size={16} />
                 <span className="text-sm">{t?.summary?.analyzing || '分析中...'}</span>
+              </div>
+            ) : moodError ? (
+              <div className="text-center">
+                <p className="text-sm text-red-600 mb-2">{moodError}</p>
+                <button
+                  onClick={handleRegenerateMoodInsight}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-xs font-medium mx-auto"
+                >
+                  <RefreshCw size={12} />
+                  {t?.summary?.retry || '重试'}
+                </button>
               </div>
             ) : (
               <>

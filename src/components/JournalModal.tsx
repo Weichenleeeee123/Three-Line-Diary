@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { X, Save } from 'lucide-react';
+import { X, Camera, Save } from 'lucide-react';
 import useJournalStore from '@/hooks/useJournalStore';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface JournalModalProps {
@@ -13,6 +14,8 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
   const { getEntry, addEntry, updateEntry } = useJournalStore();
   const [sentences, setSentences] = useState(['', '', '']);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
 
   const existingEntry = getEntry(date);
 
@@ -20,9 +23,11 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
     if (isOpen && date) {
       if (existingEntry) {
         setSentences(existingEntry.sentences);
+        setSelectedImage(existingEntry.image || null);
         setIsEditing(false);
       } else {
         setSentences(['', '', '']);
+        setSelectedImage(null);
         setIsEditing(true);
       }
     }
@@ -37,10 +42,10 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
     }
 
     if (existingEntry) {
-      updateEntry(date, sentences as [string, string, string]);
+      updateEntry(date, sentences as [string, string, string], selectedImage || undefined);
       toast.success('日记已更新');
     } else {
-      addEntry(date, sentences as [string, string, string]);
+      addEntry(date, sentences as [string, string, string], selectedImage || undefined);
       toast.success('日记已保存');
     }
     
@@ -51,6 +56,53 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
     setIsEditing(false);
     onClose();
   };
+
+  const handleImageSelect = async () => {
+    try {
+      setIsProcessingImage(true);
+      
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'environment';
+      
+      const file = await new Promise<File>((resolve, reject) => {
+        input.onchange = (e) => {
+          const file = (e.target as HTMLInputElement).files?.[0];
+          if (file) resolve(file);
+          else reject(new Error('用户取消选择'));
+        };
+        input.click();
+      });
+      
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('图片文件过大，请选择小于5MB的图片');
+        return;
+      }
+      
+      const reader = new FileReader();
+      const base64 = await new Promise<string>((resolve) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+      
+      setSelectedImage(base64);
+      toast.success('照片已添加');
+    } catch (error) {
+      if (error instanceof Error && error.message !== '用户取消选择') {
+        toast.error('照片处理失败');
+      }
+    } finally {
+      setIsProcessingImage(false);
+    }
+  };
+
+  const handleImageRemove = () => {
+    setSelectedImage(null);
+    toast.success('照片已移除');
+  };
+
+
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -149,6 +201,72 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Photo Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-gray-700">
+                📷 照片记录
+              </label>
+              {selectedImage && isEditing && (
+                <button
+                  onClick={handleImageRemove}
+                  className="text-red-500 hover:text-red-600 transition-colors p-1 rounded"
+                  title="移除照片"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+            
+            {selectedImage ? (
+              <div className="space-y-3">
+                <div className="relative group">
+                  <img
+                    src={selectedImage}
+                    alt="Journal photo"
+                    className="w-full h-40 object-contain rounded-lg shadow-sm bg-gray-100"
+                  />
+                  {isEditing && (
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg flex items-center justify-center">
+                      <button
+                        onClick={handleImageSelect}
+                        disabled={isProcessingImage}
+                        className="opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white text-gray-800 px-3 py-2 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 text-sm font-medium"
+                      >
+                        {isProcessingImage ? '处理中...' : '更换照片'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+                
+
+              </div>
+            ) : (
+              isEditing && (
+                <button
+                  onClick={handleImageSelect}
+                  disabled={isProcessingImage}
+                  className={cn(
+                    "w-full h-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 transition-all duration-300 hover:border-orange-400 hover:bg-orange-50 active:scale-95",
+                    isProcessingImage ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                  )}
+                >
+                  {isProcessingImage ? (
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-xs text-gray-600">处理中...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <Camera size={24} className="text-gray-400" />
+                      <span className="text-sm text-gray-600">添加照片</span>
+                    </>
+                  )}
+                </button>
+              )
+            )}
           </div>
 
           {/* Action Buttons */}

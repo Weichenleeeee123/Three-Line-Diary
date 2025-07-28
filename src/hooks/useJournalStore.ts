@@ -5,6 +5,7 @@ export interface JournalEntry {
   id: string;
   date: string; // YYYY-MM-DD format
   sentences: [string, string, string];
+  image?: string; // Base64 encoded image data
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,8 +22,8 @@ interface JournalStore {
   entries: JournalEntry[];
   
   // Actions
-  addEntry: (date: string, sentences: [string, string, string]) => void;
-  updateEntry: (date: string, sentences: [string, string, string]) => void;
+  addEntry: (date: string, sentences: [string, string, string], image?: string) => void;
+  updateEntry: (date: string, sentences: [string, string, string], image?: string) => void;
   deleteEntry: (date: string) => void;
   deleteAllEntries: () => void;
   getEntry: (date: string) => JournalEntry | undefined;
@@ -36,11 +37,12 @@ const useJournalStore = create<JournalStore>()(persist(
   (set, get) => ({
     entries: [],
     
-    addEntry: (date: string, sentences: [string, string, string]) => {
+    addEntry: (date: string, sentences: [string, string, string], image?: string) => {
       const newEntry: JournalEntry = {
         id: `${date}-${Date.now()}`,
         date,
         sentences,
+        image,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -50,11 +52,11 @@ const useJournalStore = create<JournalStore>()(persist(
       }));
     },
     
-    updateEntry: (date: string, sentences: [string, string, string]) => {
+    updateEntry: (date: string, sentences: [string, string, string], image?: string) => {
       set((state) => ({
         entries: state.entries.map(entry => 
           entry.date === date 
-            ? { ...entry, sentences, updatedAt: new Date() }
+            ? { ...entry, sentences, image, updatedAt: new Date() }
             : entry
         )
       }));
