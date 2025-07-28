@@ -7,6 +7,7 @@ import Summary from "@/pages/Summary";
 import Profile from "@/pages/Profile";
 
 export default function App() {
+  
   return (
     <Router>
       <Layout>

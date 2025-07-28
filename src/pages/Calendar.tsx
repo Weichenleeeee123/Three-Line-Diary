@@ -1,19 +1,16 @@
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Edit3 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import useJournalStore from '@/hooks/useJournalStore';
+import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
-
-const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
-const MONTHS = [
-  '1月', '2月', '3月', '4月', '5月', '6月',
-  '7月', '8月', '9月', '10月', '11月', '12月'
-];
+import JournalModal from '@/components/JournalModal';
 
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { getEntriesForMonth, hasEntryForDate } = useJournalStore();
-  const navigate = useNavigate();
+  const { t, language } = useI18n();
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -63,8 +60,13 @@ export default function Calendar() {
   };
 
   const handleDateClick = (dateStr: string) => {
-    // Navigate to home page with selected date
-    navigate(`/?date=${dateStr}`);
+    setSelectedDate(dateStr);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedDate(null);
   };
 
   const completionRate = Math.round((monthEntries.length / new Date(year, month + 1, 0).getDate()) * 100);
@@ -83,7 +85,7 @@ export default function Calendar() {
         </button>
         
         <h1 className="text-xl font-semibold text-gray-800">
-          {year}年{MONTHS[month]}
+          {language === 'zh' ? `${year}年${t.calendar.months[month]}` : `${t.calendar.months[month]} ${year}`}
         </h1>
         
         <button
@@ -98,15 +100,15 @@ export default function Calendar() {
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-orange-50 rounded-xl p-4 text-center">
           <div className="text-2xl font-bold text-orange-600">{completedDays}</div>
-          <div className="text-sm text-gray-600">已记录</div>
+          <div className="text-sm text-gray-600">{t.calendar.recorded}</div>
         </div>
         <div className="bg-blue-50 rounded-xl p-4 text-center">
           <div className="text-2xl font-bold text-blue-600">{totalDays - completedDays}</div>
-          <div className="text-sm text-gray-600">未记录</div>
+          <div className="text-sm text-gray-600">{t.calendar.unrecorded}</div>
         </div>
         <div className="bg-green-50 rounded-xl p-4 text-center">
           <div className="text-2xl font-bold text-green-600">{completionRate}%</div>
-          <div className="text-sm text-gray-600">完成率</div>
+          <div className="text-sm text-gray-600">{t.calendar.completionRate}</div>
         </div>
       </div>
 
@@ -114,7 +116,7 @@ export default function Calendar() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {/* Weekday Headers */}
         <div className="grid grid-cols-7 bg-gray-50">
-          {WEEKDAYS.map((day) => (
+          {t.calendar.weekdays.map((day) => (
             <div key={day} className="p-3 text-center text-sm font-medium text-gray-600">
               {day}
             </div>
@@ -152,14 +154,14 @@ export default function Calendar() {
       {/* Recent Entries */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-800">📖 最近记录</h2>
-          <span className="text-sm text-gray-500">{monthEntries.length} 条记录</span>
+          <h2 className="text-lg font-semibold text-gray-800">📖 {t.calendar.recentEntries}</h2>
+          <span className="text-sm text-gray-500">{monthEntries.length} {t.calendar.entriesCount}</span>
         </div>
         
         {monthEntries.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            <p>本月还没有记录</p>
-            <p className="text-sm mt-1">点击日期开始记录吧！</p>
+            <p>{t.calendar.noEntriesThisMonth}</p>
+            <p className="text-sm mt-1">{t.calendar.clickDateToStart}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -168,7 +170,7 @@ export default function Calendar() {
               .slice(0, 5)
               .map((entry) => {
                 const date = new Date(entry.date);
-                const dateStr = date.toLocaleDateString('zh-CN', {
+                const dateStr = date.toLocaleDateString(language === 'zh' ? 'zh-CN' : 'en-US', {
                   month: 'short',
                   day: 'numeric',
                   weekday: 'short'
@@ -204,6 +206,15 @@ export default function Calendar() {
           </div>
         )}
       </div>
+
+      {/* Journal Modal */}
+      {selectedDate && (
+        <JournalModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          date={selectedDate}
+        />
+      )}
     </div>
   );
 }

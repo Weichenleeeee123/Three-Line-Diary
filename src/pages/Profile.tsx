@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   User, 
   Calendar, 
@@ -6,16 +6,20 @@ import {
   Flame, 
   Trophy, 
   Bell, 
-  Palette, 
   Download, 
   Upload,
-  Settings,
   Award,
   Target,
-  Star
+  Star,
+  Database,
+  Trash2,
+  Globe,
+  AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import useJournalStore from '@/hooks/useJournalStore';
+import { generateMockData, clearAllData } from '@/utils/mockData';
+import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
 
 interface Achievement {
@@ -28,11 +32,11 @@ interface Achievement {
   unlocked: boolean;
 }
 
-const achievements: Achievement[] = [
+const getAchievements = (t: any): Achievement[] => [
   {
     id: 'first-entry',
-    title: '初次记录',
-    description: '写下第一篇日记',
+    title: t?.profile?.achievementTitles?.['first-entry'] || '初次记录',
+    description: t?.profile?.achievementDescriptions?.['first-entry'] || '写下第一篇日记',
     icon: PenTool,
     requirement: 1,
     type: 'days',
@@ -40,8 +44,8 @@ const achievements: Achievement[] = [
   },
   {
     id: 'week-warrior',
-    title: '一周坚持',
-    description: '连续记录7天',
+    title: t?.profile?.achievementTitles?.['week-warrior'] || '一周坚持',
+    description: t?.profile?.achievementDescriptions?.['week-warrior'] || '连续记录7天',
     icon: Calendar,
     requirement: 7,
     type: 'streak',
@@ -49,8 +53,8 @@ const achievements: Achievement[] = [
   },
   {
     id: 'month-master',
-    title: '月度达人',
-    description: '累计记录30天',
+    title: t?.profile?.achievementTitles?.['month-master'] || '月度达人',
+    description: t?.profile?.achievementDescriptions?.['month-master'] || '累计记录30天',
     icon: Trophy,
     requirement: 30,
     type: 'days',
@@ -58,8 +62,8 @@ const achievements: Achievement[] = [
   },
   {
     id: 'fire-streak',
-    title: '火焰连击',
-    description: '连续记录30天',
+    title: t?.profile?.achievementTitles?.['fire-streak'] || '火焰连击',
+    description: t?.profile?.achievementDescriptions?.['fire-streak'] || '连续记录30天',
     icon: Flame,
     requirement: 30,
     type: 'streak',
@@ -67,8 +71,8 @@ const achievements: Achievement[] = [
   },
   {
     id: 'hundred-club',
-    title: '百日俱乐部',
-    description: '累计记录100天',
+    title: t?.profile?.achievementTitles?.['hundred-club'] || '百日俱乐部',
+    description: t?.profile?.achievementDescriptions?.['hundred-club'] || '累计记录100天',
     icon: Star,
     requirement: 100,
     type: 'days',
@@ -76,8 +80,8 @@ const achievements: Achievement[] = [
   },
   {
     id: 'sentence-master',
-    title: '文字大师',
-    description: '累计写下1000句话',
+    title: t?.profile?.achievementTitles?.['sentence-master'] || '文字大师',
+    description: t?.profile?.achievementDescriptions?.['sentence-master'] || '累计写下1000句话',
     icon: Award,
     requirement: 1000,
     type: 'sentences',
@@ -88,11 +92,15 @@ const achievements: Achievement[] = [
 export default function Profile() {
   const [showSettings, setShowSettings] = useState(false);
   const [dailyReminder, setDailyReminder] = useState(true);
-  const { entries, getStats } = useJournalStore();
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { entries, getStats, deleteEntry, deleteAllEntries } = useJournalStore();
+  const { t, language, setLanguage } = useI18n();
   
   const stats = getStats();
   
   // Calculate achievements
+  const achievements = getAchievements(t);
   const unlockedAchievements = achievements.map(achievement => {
     let unlocked = false;
     
@@ -164,6 +172,35 @@ export default function Profile() {
     input.click();
   };
   
+  const handleGenerateMockData = () => {
+    try {
+      generateMockData();
+      // 强制重新渲染页面以显示新数据
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+      toast.success(t?.profile?.mockDataGenerated || '模拟数据生成成功！');
+    } catch (error) {
+      toast.error(t?.profile?.generateMockDataError || '生成模拟数据失败');
+    }
+  };
+  
+  const handleClearData = () => {
+     try {
+       deleteAllEntries();
+       clearAllData();
+       setShowClearConfirm(false);
+       toast.success(t?.profile?.dataClearedSuccess || '数据已清空');
+     } catch (error) {
+       toast.error(t?.profile?.clearDataError || '清空数据失败');
+     }
+   };
+  
+  const handleDeleteEntry = (date: string) => {
+    deleteEntry(date);
+    toast.success(t?.profile?.entryDeletedSuccess || '日记已删除');
+  };
+  
   return (
     <div className="p-4 space-y-6">
       {/* Header */}
@@ -171,8 +208,8 @@ export default function Profile() {
         <div className="w-20 h-20 bg-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center">
           <User className="text-white" size={32} />
         </div>
-        <h1 className="text-xl font-semibold text-gray-800">三句日记用户</h1>
-        <p className="text-gray-500 text-sm mt-1">记录生活，感受成长</p>
+        <h1 className="text-xl font-semibold text-gray-800">{t?.profile?.userProfile || '三句日记用户'}</h1>
+        <p className="text-gray-500 text-sm mt-1">{t?.profile?.manageSettings || '记录生活，感受成长'}</p>
       </div>
 
       {/* Stats Grid */}
@@ -180,25 +217,25 @@ export default function Profile() {
         <div className="bg-orange-50 rounded-xl p-4 text-center">
           <Calendar className="mx-auto mb-2 text-orange-600" size={24} />
           <div className="text-2xl font-bold text-orange-600">{stats.totalDays}</div>
-          <div className="text-sm text-gray-600">总天数</div>
+          <div className="text-sm text-gray-600">{t?.profile?.stats?.totalDays || '总天数'}</div>
         </div>
         
         <div className="bg-blue-50 rounded-xl p-4 text-center">
           <PenTool className="mx-auto mb-2 text-blue-600" size={24} />
           <div className="text-2xl font-bold text-blue-600">{stats.totalSentences}</div>
-          <div className="text-sm text-gray-600">总句数</div>
+          <div className="text-sm text-gray-600">{t?.profile?.stats?.totalSentences || '总句数'}</div>
         </div>
         
         <div className="bg-green-50 rounded-xl p-4 text-center">
           <Flame className="mx-auto mb-2 text-green-600" size={24} />
           <div className="text-2xl font-bold text-green-600">{stats.currentStreak}</div>
-          <div className="text-sm text-gray-600">连续</div>
+          <div className="text-sm text-gray-600">{t?.profile?.stats?.currentStreak || '连续'}</div>
         </div>
         
         <div className="bg-purple-50 rounded-xl p-4 text-center">
           <Target className="mx-auto mb-2 text-purple-600" size={24} />
           <div className="text-2xl font-bold text-purple-600">{stats.completionRate}%</div>
-          <div className="text-sm text-gray-600">完成率</div>
+          <div className="text-sm text-gray-600">{t?.profile?.stats?.completionRate || '完成率'}</div>
         </div>
       </div>
 
@@ -206,7 +243,7 @@ export default function Profile() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            🏆 成就
+            🏆 {t?.profile?.achievements || '成就'}
           </h2>
           <span className="text-sm text-gray-500">{unlockedCount}/{achievements.length}</span>
         </div>
@@ -246,7 +283,7 @@ export default function Profile() {
       {/* Settings */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-          ⚙️ 设置
+          ⚙️ {t?.profile?.settings || '设置'}
         </h2>
         
         <div className="space-y-3">
@@ -255,8 +292,8 @@ export default function Profile() {
             <div className="flex items-center gap-3">
               <Bell className="text-gray-600" size={20} />
               <div>
-                <h3 className="font-medium text-gray-800">每日提醒</h3>
-                <p className="text-sm text-gray-600">提醒你每天记录</p>
+                <h3 className="font-medium text-gray-800">{t?.profile?.dailyReminder || '每日提醒'}</h3>
+                <p className="text-sm text-gray-600">{t?.profile?.dailyReminderDesc || '提醒你每天记录'}</p>
               </div>
             </div>
             <button
@@ -273,17 +310,38 @@ export default function Profile() {
             </button>
           </div>
           
-          {/* Theme Settings */}
-          <button className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 w-full text-left hover:bg-gray-50 transition-colors">
-            <div className="flex items-center gap-3">
-              <Palette className="text-gray-600" size={20} />
+          {/* 语言设置 */}
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-3 mb-3">
+              <Globe className="text-gray-600" size={20} />
               <div>
-                <h3 className="font-medium text-gray-800">主题设置</h3>
-                <p className="text-sm text-gray-600">自定义应用外观</p>
+                <h3 className="font-medium text-gray-800">{t?.profile?.languageSettings || '语言设置'}</h3>
+                <p className="text-sm text-gray-600">{t?.profile?.languageSettingsDesc || '选择应用语言'}</p>
               </div>
             </div>
-            <span className="text-gray-400">›</span>
-          </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setLanguage('zh')}
+                className={`px-3 py-2 rounded-md text-sm transition-colors ${
+                  language === 'zh' 
+                    ? 'bg-blue-100 text-blue-700 border border-blue-300' 
+                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                中文
+              </button>
+              <button
+                onClick={() => setLanguage('en')}
+                className={`px-3 py-2 rounded-md text-sm transition-colors ${
+                  language === 'en' 
+                    ? 'bg-blue-100 text-blue-700 border border-blue-300' 
+                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                English
+              </button>
+            </div>
+          </div>
           
           {/* Data Backup */}
           <button 
@@ -293,8 +351,8 @@ export default function Profile() {
             <div className="flex items-center gap-3">
               <Download className="text-gray-600" size={20} />
               <div>
-                <h3 className="font-medium text-gray-800">数据备份</h3>
-                <p className="text-sm text-gray-600">导出你的日记数据</p>
+                <h3 className="font-medium text-gray-800">{t?.profile?.dataBackup || '数据备份'}</h3>
+                <p className="text-sm text-gray-600">{t?.profile?.dataBackupDesc || '导出你的日记数据'}</p>
               </div>
             </div>
             <span className="text-gray-400">›</span>
@@ -308,12 +366,42 @@ export default function Profile() {
             <div className="flex items-center gap-3">
               <Upload className="text-gray-600" size={20} />
               <div>
-                <h3 className="font-medium text-gray-800">导出数据</h3>
-                <p className="text-sm text-gray-600">从备份文件恢复数据</p>
+                <h3 className="font-medium text-gray-800">{t?.profile?.importData || '导入数据'}</h3>
+                <p className="text-sm text-gray-600">{t?.profile?.importDataDesc || '从备份文件恢复数据'}</p>
               </div>
             </div>
             <span className="text-gray-400">›</span>
           </button>
+          
+          {/* Generate Mock Data */}
+          <button 
+            onClick={handleGenerateMockData}
+            className="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-200 w-full text-left hover:bg-blue-100 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <Database className="text-blue-600" size={20} />
+              <div>
+                <h3 className="font-medium text-blue-800">{t?.profile?.generateMockData || '生成模拟数据'}</h3>
+                <p className="text-sm text-blue-600">{t?.profile?.generateMockDataDesc || '生成过去30天的示例日记'}</p>
+              </div>
+            </div>
+            <span className="text-blue-400">›</span>
+          </button>
+          
+          {/* Clear All Data */}
+           <button 
+             onClick={() => setShowClearConfirm(true)}
+             className="flex items-center justify-between p-4 bg-white rounded-xl border border-red-100 w-full text-left hover:bg-red-50 transition-colors"
+           >
+             <div className="flex items-center gap-3">
+               <Trash2 className="text-red-600" size={20} />
+               <div>
+                 <h3 className="font-medium text-red-800">{t?.profile?.clearAllData || '清空所有数据'}</h3>
+                 <p className="text-sm text-red-600">{t?.profile?.clearAllDataDesc || '删除所有日记记录'}</p>
+               </div>
+             </div>
+             <span className="text-red-400">›</span>
+           </button>
         </div>
       </div>
       
@@ -322,6 +410,33 @@ export default function Profile() {
         <p>三句话日记 v1.0</p>
         <p className="mt-1">简单记录，深度思考</p>
       </div>
+      
+      {/* 确认删除对话框 */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertTriangle className="text-red-500" size={24} />
+              <h3 className="text-lg font-semibold text-gray-900">{t?.profile?.confirmClearData || '确认清空数据'}</h3>
+            </div>
+            <p className="text-gray-600 mb-6">{t?.profile?.clearDataWarning || '此操作将删除所有日记数据，且无法恢复。确定要继续吗？'}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                {t?.profile?.cancel || '取消'}
+              </button>
+              <button
+                 onClick={handleClearData}
+                 className="flex-1 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+               >
+                 {t?.profile?.confirm || '确认'}
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

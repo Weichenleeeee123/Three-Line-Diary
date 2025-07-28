@@ -23,6 +23,8 @@ interface JournalStore {
   // Actions
   addEntry: (date: string, sentences: [string, string, string]) => void;
   updateEntry: (date: string, sentences: [string, string, string]) => void;
+  deleteEntry: (date: string) => void;
+  deleteAllEntries: () => void;
   getEntry: (date: string) => JournalEntry | undefined;
   getEntriesForMonth: (year: number, month: number) => JournalEntry[];
   getEntriesForWeek: (startDate: string) => JournalEntry[];
@@ -56,6 +58,16 @@ const useJournalStore = create<JournalStore>()(persist(
             : entry
         )
       }));
+    },
+    
+    deleteEntry: (date: string) => {
+      set((state) => ({
+        entries: state.entries.filter(entry => entry.date !== date)
+      }));
+    },
+    
+    deleteAllEntries: () => {
+      set({ entries: [] });
     },
     
     getEntry: (date: string) => {

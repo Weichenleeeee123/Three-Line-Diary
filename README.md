@@ -1,57 +1,146 @@
-# React + TypeScript + Vite
+# 三句话日记 (Three-Line Diary)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+一个简洁优雅的日记应用，让你用三句话记录每一天的美好时光。
 
-Currently, two official plugins are available:
+## ✨ 功能特性
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 📝 核心功能
+- **三句话记录**：用简洁的三句话记录每日感悟
+- **日历视图**：直观查看历史记录，点击日期查看详情
+- **智能总结**：AI生成周报和心情洞察
+- **数据管理**：支持编辑、删除日记条目
 
-## Expanding the ESLint configuration
+### 🌍 用户体验
+- **多语言支持**：完整的中英文界面切换
+- **响应式设计**：完美适配手机和桌面设备
+- **现代化UI**：简洁美观的界面设计
+- **本地存储**：数据安全保存在本地
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 🏆 成就系统
+- **写作里程碑**：连续记录天数奖励
+- **内容质量**：字数和质量成就
+- **使用频率**：活跃度奖励
+- **特殊节日**：节日主题成就
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 🚀 技术栈
+
+- **前端框架**：React 18 + TypeScript
+- **构建工具**：Vite
+- **样式方案**：Tailwind CSS
+- **状态管理**：Zustand
+- **图标库**：Lucide React
+- **AI服务**：Google Gemini API
+- **部署平台**：腾讯云开发
+
+## 📦 安装和运行
+
+### 环境要求
+- Node.js >= 16.0.0
+- npm 或 pnpm
+
+### 本地开发
+
+```bash
+# 克隆项目
+git clone <repository-url>
+cd Three-Line-Diary
+
+# 安装依赖
+npm install
+# 或
+pnpm install
+
+# 启动开发服务器
+npm run dev
+# 或
+pnpm dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 构建部署
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+# 构建生产版本
+npm run build
 
-export default tseslint.config({
-  extends: [
-    // other configs...
-    // Enable lint rules for React
-    reactX.configs['recommended-typescript'],
-    // Enable lint rules for React DOM
-    reactDom.configs.recommended,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+# 预览构建结果
+npm run preview
 ```
+
+## 🌐 在线体验
+
+访问：[https://threelinediary-2gs9l8373211c571-1253474999.tcloudbaseapp.com/](https://threelinediary-2gs9l8373211c571-1253474999.tcloudbaseapp.com/)
+
+## 📱 功能截图
+
+### 首页 - 三句话输入
+简洁的输入界面，每日一句励志语录激发灵感。
+
+### 日历视图
+直观的日历界面，轻松查看历史记录。
+
+### AI智能总结
+- **周报生成**：自动分析一周的记录，生成深度总结
+- **心情洞察**：AI分析情感变化，提供个性化建议
+
+### 个人中心
+- 成就展示
+- 统计数据
+- 语言设置
+- 数据管理
+
+## 🔧 配置说明
+
+### AI功能配置
+如需使用AI总结功能，请配置Gemini API密钥：
+
+1. 在Google AI Studio获取API密钥
+2. 在应用设置中配置API密钥
+
+### 环境变量
+```env
+VITE_GEMINI_API_KEY=your_api_key_here
+```
+
+## 📂 项目结构
+
+```
+src/
+├── components/          # 可复用组件
+│   ├── BottomNavigation.tsx
+│   ├── JournalModal.tsx
+│   └── Layout.tsx
+├── hooks/              # 自定义Hooks
+│   ├── useI18n.ts      # 国际化
+│   └── useJournalStore.ts  # 数据管理
+├── pages/              # 页面组件
+│   ├── Home.tsx        # 首页
+│   ├── Calendar.tsx    # 日历
+│   ├── Summary.tsx     # 总结
+│   └── Profile.tsx     # 个人中心
+├── services/           # API服务
+│   └── geminiApi.ts    # AI服务
+└── utils/              # 工具函数
+    └── mockData.ts     # 模拟数据
+```
+
+## 🤝 贡献指南
+
+欢迎提交Issue和Pull Request来帮助改进项目！
+
+### 开发规范
+- 使用TypeScript进行类型检查
+- 遵循ESLint代码规范
+- 组件保持单一职责
+- 提交前运行测试
+
+## 📄 许可证
+
+MIT License
+
+## 🙏 致谢
+
+感谢所有为这个项目做出贡献的开发者和用户！
+
+---
+
+**开始你的三句话日记之旅吧！** ✍️📖✨

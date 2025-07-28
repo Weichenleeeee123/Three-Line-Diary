@@ -1,17 +1,19 @@
 import { Home, Calendar, BarChart3, User } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-
-const navigationItems = [
-  { path: '/', icon: Home, label: '首页' },
-  { path: '/calendar', icon: Calendar, label: '日历' },
-  { path: '/summary', icon: BarChart3, label: '总结' },
-  { path: '/profile', icon: User, label: '我的' },
-];
+import { useI18n } from '@/hooks/useI18n';
 
 export default function BottomNavigation() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useI18n();
+  
+  const navigationItems = [
+    { path: '/', icon: Home, label: t.navigation.home },
+    { path: '/calendar', icon: Calendar, label: t.navigation.calendar },
+    { path: '/summary', icon: BarChart3, label: t.navigation.summary },
+    { path: '/profile', icon: User, label: t.navigation.profile },
+  ];
 
   return (
     <div className="bg-white border-t border-gray-200 px-4 py-2 flex-shrink-0">
