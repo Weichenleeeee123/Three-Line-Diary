@@ -79,18 +79,18 @@ export default function Calendar() {
       <div className="flex items-center justify-between py-4 fade-in">
         <button
           onClick={() => navigateMonth('prev')}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-300 hover:scale-110 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="p-2 rounded-lg hover:bg-orange-50 hover:text-orange-500 transition-all duration-300 hover:scale-110 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
           <ChevronLeft size={20} />
         </button>
         
-        <h1 className="text-xl font-semibold text-gray-800 typewriter">
-          {language === 'zh' ? `${year}年${t.calendar.months[month]}` : `${t.calendar.months[month]} ${year}`}
+        <h1 className="text-xl font-bold text-gray-800 typewriter flex items-center">
+          📅 {language === 'zh' ? `${year}年${t.calendar.months[month]}` : `${t.calendar.months[month]} ${year}`}
         </h1>
         
         <button
           onClick={() => navigateMonth('next')}
-          className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-300 hover:scale-110 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="p-2 rounded-lg hover:bg-orange-50 hover:text-orange-500 transition-all duration-300 hover:scale-110 active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
           <ChevronRight size={20} />
         </button>
@@ -115,28 +115,32 @@ export default function Calendar() {
       {/* Calendar Grid */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden card-hover fade-in-delay-1">
         {/* Weekday Headers */}
-        <div className="grid grid-cols-7 bg-gray-50">
+        <div className="grid grid-cols-7 bg-gradient-to-r from-gray-50 to-gray-100">
           {t.calendar.weekdays.map((day, index) => (
-            <div key={day} className={`p-3 text-center text-sm font-medium text-gray-600 fade-in-delay-${index % 3 + 1}`}>
+            <div key={day} className={`p-3 text-center text-sm font-bold text-gray-700 fade-in-delay-${index % 3 + 1}`}>
               {day}
             </div>
           ))}
         </div>
 
         {/* Calendar Days */}
-        <div className="grid grid-cols-7">
+        <div className="grid grid-cols-7 gap-1 p-2">
           {calendarDays.map((day, index) => (
             <button
               key={index}
               onClick={() => day.isCurrentMonth && handleDateClick(day.dateStr)}
               disabled={!day.isCurrentMonth}
               className={cn(
-                "aspect-square p-2 text-sm relative transition-all duration-300 min-h-[44px] flex items-center justify-center",
+                "aspect-square p-2 text-sm relative transition-all duration-300 min-h-[44px] flex items-center justify-center rounded-xl font-medium",
                 "slide-in-up",
                 day.isCurrentMonth
-                  ? "hover:bg-gray-50 hover:scale-110 active:scale-95 cursor-pointer"
+                  ? day.hasEntry
+                    ? "bg-gradient-to-br from-orange-100 to-orange-200 text-orange-700 hover:from-orange-200 hover:to-orange-300 shadow-md hover:scale-110 active:scale-95 cursor-pointer"
+                    : day.isToday
+                    ? "bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 border-2 border-blue-400 shadow-md hover:scale-110 active:scale-95 cursor-pointer pulse"
+                    : "hover:bg-gradient-to-br hover:from-gray-100 hover:to-gray-200 hover:shadow-md hover:scale-110 active:scale-95 cursor-pointer"
                   : "text-gray-300 cursor-not-allowed",
-                day.isToday && "bg-orange-100 text-orange-600 font-semibold pulse"
+                day.isToday && !day.hasEntry && "bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 border-2 border-blue-400 font-bold pulse"
               )}
               style={{ animationDelay: `${index * 20}ms` }}
             >
@@ -144,8 +148,8 @@ export default function Calendar() {
               
               {/* Entry Indicator */}
               {day.hasEntry && day.isCurrentMonth && (
-                <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2">
-                  <div className="w-2 h-2 bg-orange-400 rounded-full pulse"></div>
+                <div className="absolute -top-1 -right-1">
+                  <div className="w-3 h-3 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full shadow-lg pulse"></div>
                 </div>
               )}
             </button>
@@ -183,23 +187,23 @@ export default function Calendar() {
                   <div
                     key={entry.id}
                     onClick={() => handleDateClick(entry.date)}
-                    className="bg-gray-50 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-all duration-300 hover:scale-105 active:scale-95 card-hover"
+                    className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 cursor-pointer hover:from-orange-50 hover:to-orange-100 transition-all duration-300 hover:scale-105 active:scale-95 card-hover shadow-sm hover:shadow-md border border-gray-200"
                   >
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-gray-600">{dateStr}</span>
+                      <span className="text-sm font-bold text-gray-700">{dateStr}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">{filledSentences.length}/3</span>
-                        <Edit3 size={14} className="text-gray-400" />
+                        <span className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded-full">{filledSentences.length}/3</span>
+                        <Edit3 size={14} className="text-orange-500" />
                       </div>
                     </div>
                     <div className="space-y-1">
                       {filledSentences.slice(0, 2).map((sentence, index) => (
-                        <p key={index} className="text-sm text-gray-700 line-clamp-1">
+                        <p key={index} className="text-sm text-gray-700 line-clamp-1 font-medium">
                           {sentence}
                         </p>
                       ))}
                       {filledSentences.length > 2 && (
-                        <p className="text-xs text-gray-500">...</p>
+                        <p className="text-xs text-orange-500 font-medium">...</p>
                       )}
                     </div>
                   </div>

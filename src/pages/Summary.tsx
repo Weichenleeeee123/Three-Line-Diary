@@ -391,7 +391,7 @@ export default function Summary() {
             {aiSummary ? (
               <TypewriterText
                 text={aiSummary}
-                speed={40}
+                speed={15}
                 delay={200}
                 className="text-gray-700 leading-relaxed mb-4 block"
               />
@@ -456,7 +456,7 @@ export default function Summary() {
                   {moodInsight ? (
                     <TypewriterText
                       text={moodInsight}
-                      speed={40}
+                      speed={15}
                       delay={200}
                       className="text-sm text-blue-700 leading-relaxed flex-1 block"
                     />

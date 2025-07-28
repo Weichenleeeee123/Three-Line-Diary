@@ -5,12 +5,17 @@ import useJournalStore from '@/hooks/useJournalStore';
 import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
 import TypewriterText from '@/components/TypewriterText';
+import CelebrationModal from '@/components/CelebrationModal';
+import { playDiarySaveSound, preloadSounds } from '@/services/soundService';
+
 
 export default function Home() {
   const [sentences, setSentences] = useState<[string, string, string]>(['', '', '']);
   const [currentQuote, setCurrentQuote] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [quoteKey, setQuoteKey] = useState(0);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [isFirstTimeToday, setIsFirstTimeToday] = useState(false);
   const { addEntry, updateEntry, getEntry } = useJournalStore();
   const { t, language } = useI18n();
   
@@ -32,6 +37,9 @@ export default function Home() {
     if (existingEntry) {
       setSentences(existingEntry.sentences);
     }
+
+    // Preload sounds for better performance
+    preloadSounds();
   }, [today, getEntry, t.home.motivationalQuotes]);
 
   const refreshQuote = () => {
@@ -70,12 +78,19 @@ export default function Home() {
     }
 
     const existingEntry = getEntry(today);
+    const isFirstTime = !existingEntry;
+    
     if (existingEntry) {
       updateEntry(today, sentences);
       toast.success(t.home.updated);
+      // Play sound effect for updates
+      playDiarySaveSound();
     } else {
       addEntry(today, sentences);
       toast.success(t.home.saved);
+      setIsFirstTimeToday(isFirstTime);
+      setShowCelebration(true);
+      // Sound will be played by CelebrationModal for first time entries
     }
   };
 
@@ -89,7 +104,7 @@ export default function Home() {
       </div>
 
       {/* Daily Quote Banner */}
-      <div className="bg-gradient-to-r from-orange-400 to-orange-500 rounded-2xl p-6 text-center text-white shadow-lg relative card-hover gradient-shift fade-in-delay-1">
+      <div className="bg-gradient-to-r from-orange-400 to-orange-500 rounded-2xl p-6 text-center text-white shadow-lg relative card-hover-enhanced gradient-shift fade-in-delay-1">
         <Quote className="mx-auto mb-3 float" size={24} />
         <div className="text-lg font-medium mb-3 min-h-[3rem] flex items-center justify-center">
           {currentQuote && (
@@ -105,7 +120,7 @@ export default function Home() {
         <button
           onClick={refreshQuote}
           className={cn(
-            "absolute top-4 right-4 p-2 rounded-full hover:bg-white/20 transition-all duration-300",
+            "absolute top-4 right-4 p-2 rounded-full hover:bg-white/20 transition-all duration-300 button-press-enhanced",
             isRefreshing ? "spin-refresh" : "hover:scale-110"
           )}
           title={t.home.refreshQuote}
@@ -121,12 +136,25 @@ export default function Home() {
           <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
             <span className="wiggle">✏️</span> {t.home.todayThreeSentences}
           </h2>
-          <span className={cn(
-            "text-sm text-gray-500 count-up",
-            filledCount > 0 ? "text-orange-600 font-medium" : ""
-          )}>
-            {filledCount}/3
-          </span>
+          <div className="flex items-center space-x-2">
+            <div className="flex space-x-1">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "w-3 h-3 rounded-full transition-all duration-300",
+                    i <= filledCount ? "bg-orange-500 scale-110" : "bg-gray-300"
+                  )}
+                />
+              ))}
+            </div>
+            <span className={cn(
+              "text-sm text-gray-500 count-up font-medium",
+              filledCount > 0 ? "text-orange-600" : ""
+            )}>
+              {filledCount}/3
+            </span>
+          </div>
         </div>
         
         {sentences.map((sentence, index) => (
@@ -165,8 +193,8 @@ export default function Home() {
       <button
         onClick={handleSave}
         className={cn(
-          "w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white py-4 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300 flex items-center justify-center gap-2 min-h-[44px] fade-in-delay-3",
-          "hover:shadow-xl hover:scale-105 active:scale-95",
+          "w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white py-4 rounded-xl font-semibold text-lg shadow-lg transition-all duration-300 flex items-center justify-center gap-2 min-h-[44px] fade-in-delay-3 button-press-enhanced",
+          "hover:shadow-xl hover:scale-105 active:scale-95 hover:from-orange-500 hover:to-orange-600",
           filledCount > 0 ? "pulse" : ""
         )}
       >
@@ -174,6 +202,16 @@ export default function Home() {
         {t.home.save}
       </button>
 
+      {/* Celebration Modal */}
+      {showCelebration && (
+        <CelebrationModal
+           isOpen={showCelebration}
+           isFirstTime={isFirstTimeToday}
+           title={isFirstTimeToday ? '太棒了！' : '更新成功！'}
+           message={isFirstTimeToday ? '你完成了今天的日记！' : '日记已更新'}
+           onClose={() => setShowCelebration(false)}
+         />
+      )}
 
     </div>
   );

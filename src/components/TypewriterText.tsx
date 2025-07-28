@@ -12,7 +12,7 @@ interface TypewriterTextProps {
 
 export default function TypewriterText({
   text,
-  speed = 50,
+  speed = 20,
   delay = 0,
   className = '',
   onComplete,
@@ -38,7 +38,7 @@ export default function TypewriterText({
       
       const typeTimer = setInterval(() => {
         if (currentIndex < text.length) {
-          setDisplayText(text.slice(0, currentIndex + 1));
+          setDisplayText(prev => text.slice(0, currentIndex + 1));
           currentIndex++;
         } else {
           clearInterval(typeTimer);
@@ -47,7 +47,7 @@ export default function TypewriterText({
           setTimeout(() => {
             setShowCursorState(false);
             onComplete?.();
-          }, 1000);
+          }, 500);
         }
       }, speed);
 
@@ -61,13 +61,13 @@ export default function TypewriterText({
     <span className={cn('relative inline-block', className)}>
       <span className="whitespace-pre-wrap">{displayText}</span>
       {showCursorState && (
-        <span className="inline-block w-0.5 h-[1em] bg-current ml-0.5 animate-pulse" />
+        <span className="inline-block w-0.5 h-[1em] bg-current ml-0.5 animate-[blink_1s_ease-in-out_infinite]" />
       )}
     </span>
   );
 }
 
-export function useTypewriter(text: string, speed: number = 50, delay: number = 0) {
+export function useTypewriter(text: string, speed: number = 20, delay: number = 0) {
   const [displayText, setDisplayText] = useState('');
   const [isComplete, setIsComplete] = useState(false);
 
@@ -86,7 +86,7 @@ export function useTypewriter(text: string, speed: number = 50, delay: number = 
       
       const typeTimer = setInterval(() => {
         if (currentIndex < text.length) {
-          setDisplayText(text.slice(0, currentIndex + 1));
+          setDisplayText(prev => text.slice(0, currentIndex + 1));
           currentIndex++;
         } else {
           clearInterval(typeTimer);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   User, 
   Calendar, 
@@ -21,6 +21,8 @@ import useJournalStore from '@/hooks/useJournalStore';
 import { generateMockData, clearAllData } from '@/utils/mockData';
 import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
+import AchievementModal from '@/components/AchievementModal';
+
 
 interface Achievement {
   id: string;
@@ -94,6 +96,12 @@ export default function Profile() {
   const [dailyReminder, setDailyReminder] = useState(true);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showAchievementModal, setShowAchievementModal] = useState(false);
+  const [newAchievement, setNewAchievement] = useState<any>(null);
+  const [hasShownAchievements, setHasShownAchievements] = useState<Set<string>>(() => {
+    const stored = localStorage.getItem('shownAchievements');
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  });
   const { entries, getStats, deleteEntry, deleteAllEntries } = useJournalStore();
   const { t, language, setLanguage } = useI18n();
   
@@ -101,6 +109,43 @@ export default function Profile() {
   
   // Calculate achievements
   const achievements = getAchievements(t);
+
+  // 检查新成就
+  useEffect(() => {
+    const checkForNewAchievements = () => {
+      const unlockedAchievements = achievements.filter(achievement => {
+        let unlocked = false;
+        
+        switch (achievement.type) {
+          case 'days':
+            unlocked = stats.totalDays >= achievement.requirement;
+            break;
+          case 'streak':
+            unlocked = stats.currentStreak >= achievement.requirement || stats.longestStreak >= achievement.requirement;
+            break;
+          case 'sentences':
+            unlocked = stats.totalSentences >= achievement.requirement;
+            break;
+        }
+        
+        return unlocked;
+      });
+
+      for (const achievement of unlockedAchievements) {
+        if (!hasShownAchievements.has(achievement.id)) {
+          setNewAchievement(achievement);
+          setShowAchievementModal(true);
+          const newShownSet = new Set([...hasShownAchievements, achievement.id]);
+          setHasShownAchievements(newShownSet);
+          localStorage.setItem('shownAchievements', JSON.stringify([...newShownSet]));
+  
+          break; // 一次只显示一个成就
+        }
+      }
+    };
+
+    checkForNewAchievements();
+  }, [entries, hasShownAchievements, achievements, stats]);
   const unlockedAchievements = achievements.map(achievement => {
     let unlocked = false;
     
@@ -216,28 +261,28 @@ export default function Profile() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-4 fade-in-delay-1">
-        <div className="bg-orange-50 rounded-xl p-4 text-center card-hover slide-in-up">
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 text-center card-hover-enhanced slide-in-up border border-orange-200">
           <Calendar className="mx-auto mb-2 text-orange-600 bounce" size={24} />
-          <div className="text-2xl font-bold text-orange-600 count-up">{stats.totalDays}</div>
-          <div className="text-sm text-gray-600">{t?.profile?.stats?.totalDays || '总天数'}</div>
+          <div className="text-3xl font-bold text-orange-600 count-up">{stats.totalDays}</div>
+          <div className="text-sm text-gray-600 font-medium">{t?.profile?.stats?.totalDays || '总天数'}</div>
         </div>
         
-        <div className="bg-blue-50 rounded-xl p-4 text-center card-hover slide-in-up fade-in-delay-1">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 text-center card-hover-enhanced slide-in-up fade-in-delay-1 border border-blue-200">
           <PenTool className="mx-auto mb-2 text-blue-600 wiggle" size={24} />
-          <div className="text-2xl font-bold text-blue-600 count-up">{stats.totalSentences}</div>
-          <div className="text-sm text-gray-600">{t?.profile?.stats?.totalSentences || '总句数'}</div>
+          <div className="text-3xl font-bold text-blue-600 count-up">{stats.totalSentences}</div>
+          <div className="text-sm text-gray-600 font-medium">{t?.profile?.stats?.totalSentences || '总句数'}</div>
         </div>
         
-        <div className="bg-green-50 rounded-xl p-4 text-center card-hover slide-in-up fade-in-delay-2">
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 text-center card-hover-enhanced slide-in-up fade-in-delay-2 border border-green-200">
           <Flame className="mx-auto mb-2 text-green-600 pulse" size={24} />
-          <div className="text-2xl font-bold text-green-600 count-up">{stats.currentStreak}</div>
-          <div className="text-sm text-gray-600">{t?.profile?.stats?.currentStreak || '连续'}</div>
+          <div className="text-3xl font-bold text-green-600 count-up">{stats.currentStreak}</div>
+          <div className="text-sm text-gray-600 font-medium">{t?.profile?.stats?.currentStreak || '连续'}</div>
         </div>
         
-        <div className="bg-purple-50 rounded-xl p-4 text-center card-hover slide-in-up fade-in-delay-3">
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 text-center card-hover-enhanced slide-in-up fade-in-delay-3 border border-purple-200">
           <Target className="mx-auto mb-2 text-purple-600 float" size={24} />
-          <div className="text-2xl font-bold text-purple-600 count-up">{stats.completionRate}%</div>
-          <div className="text-sm text-gray-600">{t?.profile?.stats?.completionRate || '完成率'}</div>
+          <div className="text-3xl font-bold text-purple-600 count-up">{stats.completionRate}%</div>
+          <div className="text-sm text-gray-600 font-medium">{t?.profile?.stats?.completionRate || '完成率'}</div>
         </div>
       </div>
 
@@ -258,23 +303,27 @@ export default function Profile() {
               <div
                 key={achievement.id}
                 className={cn(
-                  "p-4 rounded-xl border-2 transition-all",
+                  "p-4 rounded-xl border-2 transition-all duration-300 card-hover-enhanced relative overflow-hidden",
                   achievement.unlocked
-                    ? "bg-yellow-50 border-yellow-200"
-                    : "bg-gray-50 border-gray-200 opacity-60"
+                    ? "bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-300 achievement-glow"
+                    : "bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 opacity-60"
                 )}
               >
+                {achievement.unlocked && <div className="badge-shine"></div>}
                 <div className="text-center">
                   <div className={cn(
-                    "w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center",
+                    "w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center transition-all duration-300",
                     achievement.unlocked
-                      ? "bg-yellow-200 text-yellow-700"
-                      : "bg-gray-200 text-gray-500"
+                      ? "bg-yellow-200 text-yellow-700 heartbeat"
+                      : "bg-gray-200 text-gray-500 filter grayscale"
                   )}>
                     <Icon size={20} />
                   </div>
-                  <h3 className="font-medium text-sm text-gray-800">{achievement.title}</h3>
-                  <p className="text-xs text-gray-600 mt-1">{achievement.description}</p>
+                  <h3 className={cn(
+                    "font-bold text-sm",
+                    achievement.unlocked ? "text-yellow-700" : "text-gray-600"
+                  )}>{achievement.title}</h3>
+                  <p className="text-xs text-gray-600 mt-1 leading-tight">{achievement.description}</p>
                 </div>
               </div>
             );
@@ -348,31 +397,31 @@ export default function Profile() {
           {/* Data Backup */}
           <button 
             onClick={handleExportData}
-            className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 w-full text-left hover:bg-gray-50 transition-all duration-300 hover:scale-105 active:scale-95 button-press card-hover"
+            className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl w-full text-left hover:from-blue-600 hover:to-blue-700 transition-all duration-300 button-press-enhanced shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             <div className="flex items-center gap-3">
-              <Download className="text-gray-600 bounce" size={20} />
+              <Download className="text-white bounce" size={20} />
               <div>
-                <h3 className="font-medium text-gray-800">{t?.profile?.dataBackup || '数据备份'}</h3>
-                <p className="text-sm text-gray-600">{t?.profile?.dataBackupDesc || '导出你的日记数据'}</p>
+                <h3 className="font-medium text-white">{t?.profile?.dataBackup || '数据备份'}</h3>
+                <p className="text-sm text-blue-100">{t?.profile?.dataBackupDesc || '导出你的日记数据'}</p>
               </div>
             </div>
-            <span className="text-gray-400">›</span>
+            <span className="text-blue-200">›</span>
           </button>
           
           {/* Data Import */}
           <button 
             onClick={handleImportData}
-            className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 w-full text-left hover:bg-gray-50 transition-all duration-300 hover:scale-105 active:scale-95 button-press card-hover"
+            className="flex items-center justify-between p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl w-full text-left hover:from-green-600 hover:to-green-700 transition-all duration-300 button-press-enhanced shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             <div className="flex items-center gap-3">
-              <Upload className="text-gray-600 bounce" size={20} />
+              <Upload className="text-white bounce" size={20} />
               <div>
-                <h3 className="font-medium text-gray-800">{t?.profile?.importData || '导入数据'}</h3>
-                <p className="text-sm text-gray-600">{t?.profile?.importDataDesc || '从备份文件恢复数据'}</p>
+                <h3 className="font-medium text-white">{t?.profile?.importData || '导入数据'}</h3>
+                <p className="text-sm text-green-100">{t?.profile?.importDataDesc || '从备份文件恢复数据'}</p>
               </div>
             </div>
-            <span className="text-gray-400">›</span>
+            <span className="text-green-200">›</span>
           </button>
           
 
@@ -380,31 +429,31 @@ export default function Profile() {
           {/* Generate Mock Data */}
           <button 
             onClick={handleGenerateMockData}
-            className="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-200 w-full text-left hover:bg-blue-100 transition-all duration-300 hover:scale-105 active:scale-95 button-press card-hover"
+            className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl w-full text-left hover:from-purple-600 hover:to-purple-700 transition-all duration-300 button-press-enhanced shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             <div className="flex items-center gap-3">
-              <Database className="text-blue-600 pulse" size={20} />
+              <Database className="text-white pulse" size={20} />
               <div>
-                <h3 className="font-medium text-blue-800">{t?.profile?.generateMockData || '生成模拟数据'}</h3>
-                <p className="text-sm text-blue-600">{t?.profile?.generateMockDataDesc || '生成过去30天的示例日记'}</p>
+                <h3 className="font-medium text-white">{t?.profile?.generateMockData || '生成模拟数据'}</h3>
+                <p className="text-sm text-purple-100">{t?.profile?.generateMockDataDesc || '生成过去30天的示例日记'}</p>
               </div>
             </div>
-            <span className="text-blue-400">›</span>
+            <span className="text-purple-200">›</span>
           </button>
           
           {/* Clear All Data */}
            <button 
              onClick={() => setShowClearConfirm(true)}
-             className="flex items-center justify-between p-4 bg-white rounded-xl border border-red-100 w-full text-left hover:bg-red-50 transition-all duration-300 hover:scale-105 active:scale-95 button-press card-hover"
+             className="flex items-center justify-between p-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl w-full text-left hover:from-red-600 hover:to-red-700 transition-all duration-300 button-press-enhanced shadow-lg hover:shadow-xl transform hover:scale-105"
            >
              <div className="flex items-center gap-3">
-               <Trash2 className="text-red-600 wiggle" size={20} />
+               <Trash2 className="text-white wiggle" size={20} />
                <div>
-                 <h3 className="font-medium text-red-800">{t?.profile?.clearAllData || '清空所有数据'}</h3>
-                 <p className="text-sm text-red-600">{t?.profile?.clearAllDataDesc || '删除所有日记记录'}</p>
+                 <h3 className="font-medium text-white">{t?.profile?.clearAllData || '清空所有数据'}</h3>
+                 <p className="text-sm text-red-100">{t?.profile?.clearAllDataDesc || '删除所有日记记录'}</p>
                </div>
              </div>
-             <span className="text-red-400">›</span>
+             <span className="text-red-200">›</span>
            </button>
         </div>
       </div>
@@ -417,8 +466,8 @@ export default function Profile() {
       
       {/* 确认删除对话框 */}
       {showClearConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 fade-in">
-          <div className="bg-white rounded-lg p-6 max-w-sm mx-4 slide-in-up">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 fade-in backdrop-blur-sm">
+          <div className="bg-white rounded-xl p-6 max-w-sm mx-4 slide-in-up shadow-2xl transform scale-100 transition-all duration-300">
             <div className="flex items-center gap-3 mb-4">
               <AlertTriangle className="text-red-500" size={24} />
               <h3 className="text-lg font-semibold text-gray-900">{t?.profile?.confirmClearData || '确认清空数据'}</h3>
@@ -427,19 +476,31 @@ export default function Profile() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowClearConfirm(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-all duration-300 hover:scale-105 active:scale-95 button-press"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-all duration-300 button-press-enhanced"
               >
-                {t?.profile?.cancel || '取消'}
+                {t?.cancel || '取消'}
               </button>
               <button
                  onClick={handleClearData}
-                 className="flex-1 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all duration-300 hover:scale-105 active:scale-95 button-press"
+                 className="flex-1 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-300 button-press-enhanced"
                >
-                 {t?.profile?.confirm || '确认'}
+                 {t?.confirm || '确认'}
                </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* 成就解锁弹窗 */}
+      {showAchievementModal && newAchievement && (
+        <AchievementModal
+           isOpen={showAchievementModal}
+           achievement={newAchievement}
+           onClose={() => {
+             setShowAchievementModal(false);
+             setNewAchievement(null);
+           }}
+         />
       )}
     </div>
   );
