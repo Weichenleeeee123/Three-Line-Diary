@@ -82,7 +82,7 @@
 
 ```bash
 # 1️⃣ 克隆项目
-git clone https://github.com/your-username/Three-Line-Diary.git
+git clone https://github.com/Weichenleeeee123/Three-Line-Diary.git
 cd Three-Line-Diary
 
 # 2️⃣ 安装依赖
