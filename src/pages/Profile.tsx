@@ -185,6 +185,8 @@ export default function Profile() {
     }
   };
   
+
+  
   const handleClearData = () => {
      try {
        deleteAllEntries();
@@ -372,6 +374,8 @@ export default function Profile() {
             </div>
             <span className="text-gray-400">›</span>
           </button>
+          
+
           
           {/* Generate Mock Data */}
           <button 
