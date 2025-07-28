@@ -11,7 +11,7 @@
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.0-38B2AC.svg)](https://tailwindcss.com/)
   [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
   
-  [🌐 在线体验](https://threelinediary-2gs9l8373211c571-1253474999.tcloudbaseapp.com/) | [📖 使用指南](#使用指南) | [🚀 快速开始](#快速开始)
+  [🌐 在线体验](https://threelinediary-2gs9l8373211c571-1253474999.tcloudbaseapp.com/) | [📖 使用指南](#使用指南) | [🚀 快速开始](#快速开始) | [🌍 English](./README_EN.md)
 </div>
 
 ---
