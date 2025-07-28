@@ -135,6 +135,16 @@ const translations = {
         'hundred-club': '百日俱乐部',
         'sentence-master': '文字大师'
       },
+      achievementModal: {
+        unlocked: '🎉 成就解锁！',
+        awesome: '太棒了！'
+      },
+      celebrationModal: {
+        awesome: '太棒了！',
+        saved: '今日记录已保存',
+        firstTimeMessage: '🎉 恭喜你开始了记录之旅！坚持下去，你会发现生活中更多美好的瞬间。',
+        continueRecording: '继续记录'
+      },
       achievementDescriptions: {
         'first-entry': '写下第一篇日记',
         'week-warrior': '连续记录7天',
@@ -328,6 +338,16 @@ const translations = {
         'hundred-club': 'Hundred Club',
         'sentence-master': 'Sentence Master'
       },
+      achievementModal: {
+         unlocked: '🎉 Achievement Unlocked!',
+         awesome: 'Awesome!'
+       },
+       celebrationModal: {
+         awesome: 'Awesome!',
+         saved: 'Today\'s record saved',
+         firstTimeMessage: '🎉 Congratulations on starting your recording journey! Keep it up and you\'ll discover more beautiful moments in life.',
+         continueRecording: 'Continue Recording'
+       },
       achievementDescriptions: {
         'first-entry': 'Write your first diary entry',
         'week-warrior': 'Record for 7 consecutive days',

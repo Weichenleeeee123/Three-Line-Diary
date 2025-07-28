@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Trophy, X, Star, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { playAchievementSound } from '@/services/soundService';
+import { useI18n } from '@/hooks/useI18n';
 
 interface Achievement {
   id: string;
@@ -20,6 +21,7 @@ interface AchievementModalProps {
 }
 
 export default function AchievementModal({ achievement, isOpen, onClose }: AchievementModalProps) {
+  const { t } = useI18n();
   const [showConfetti, setShowConfetti] = useState(false);
   const [playAnimation, setPlayAnimation] = useState(false);
 
@@ -130,7 +132,7 @@ export default function AchievementModal({ achievement, isOpen, onClose }: Achie
           
           {/* 成就标题 */}
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            🎉 成就解锁！
+            {t?.achievementModal?.unlocked || '🎉 成就解锁！'}
           </h2>
           
           {/* 成就名称 */}
@@ -151,7 +153,7 @@ export default function AchievementModal({ achievement, isOpen, onClose }: Achie
               "hover:shadow-xl hover:scale-105 active:scale-95"
             )}
           >
-            太棒了！
+            {t?.achievementModal?.awesome || '太棒了！'}
           </button>
         </div>
       </div>

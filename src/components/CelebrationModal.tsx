@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CheckCircle, Heart, Star, Sparkles, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { playDiarySaveSound } from '@/services/soundService';
+import { useI18n } from '@/hooks/useI18n';
 
 interface CelebrationModalProps {
   isOpen: boolean;
@@ -14,12 +15,17 @@ interface CelebrationModalProps {
 export default function CelebrationModal({ 
   isOpen, 
   onClose, 
-  title = "太棒了！", 
-  message = "今日记录已保存",
+  title, 
+  message,
   isFirstTime = false 
 }: CelebrationModalProps) {
+  const { t } = useI18n();
   const [showAnimation, setShowAnimation] = useState(false);
   const [showHearts, setShowHearts] = useState(false);
+  
+  // 使用翻译或默认值
+  const displayTitle = title || t?.celebrationModal?.awesome || '太棒了！';
+  const displayMessage = message || t?.celebrationModal?.saved || '今日记录已保存';
 
   useEffect(() => {
     if (isOpen) {
@@ -122,19 +128,19 @@ export default function CelebrationModal({
           
           {/* 标题 */}
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            {title}
+            {displayTitle}
           </h2>
           
           {/* 消息 */}
           <p className="text-gray-600 mb-4">
-            {message}
+            {displayMessage}
           </p>
           
           {/* 额外的首次提示 */}
           {isFirstTime && (
             <div className="bg-orange-50 rounded-xl p-4 mb-4">
               <p className="text-orange-700 text-sm">
-                🎉 恭喜你开始了记录之旅！坚持下去，你会发现生活中更多美好的瞬间。
+                {t?.celebrationModal?.firstTimeMessage || '🎉 恭喜你开始了记录之旅！坚持下去，你会发现生活中更多美好的瞬间。'}
               </p>
             </div>
           )}
@@ -148,7 +154,7 @@ export default function CelebrationModal({
                 "hover:shadow-xl hover:scale-105 active:scale-95"
               )}
             >
-              继续记录
+              {t?.celebrationModal?.continueRecording || '继续记录'}
             </button>
           )}
         </div>
