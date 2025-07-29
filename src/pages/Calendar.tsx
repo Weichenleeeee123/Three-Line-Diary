@@ -10,7 +10,7 @@ export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { getEntriesForMonth, hasEntryForDate } = useJournalStore();
+  const { getEntriesForMonth, hasEntryForDate, getEntry } = useJournalStore();
   const { t, language } = useI18n();
 
   const year = currentDate.getFullYear();
@@ -129,40 +129,51 @@ export default function Calendar() {
 
         {/* Calendar Days */}
         <div className="grid grid-cols-7 gap-1 p-2">
-          {calendarDays.map((day, index) => (
-            <button
-              key={index}
-              onClick={() => day.isCurrentMonth && handleDateClick(day.dateStr)}
-              disabled={!day.isCurrentMonth}
-              className={cn(
-                "aspect-square p-2 text-sm relative transition-all duration-300 min-h-[44px] flex items-center justify-center rounded-xl font-medium",
-                "slide-in-up",
-                day.isCurrentMonth
-                  ? day.hasEntry
-                    ? "bg-gradient-to-br from-orange-100 to-orange-200 text-orange-700 hover:from-orange-200 hover:to-orange-300 shadow-md hover:scale-110 active:scale-95 cursor-pointer"
-                    : day.isToday
-                    ? "bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 border-2 border-blue-400 shadow-md hover:scale-110 active:scale-95 cursor-pointer pulse"
-                    : "hover:bg-gradient-to-br hover:from-gray-100 hover:to-gray-200 hover:shadow-md hover:scale-110 active:scale-95 cursor-pointer"
-                  : "text-gray-300 cursor-not-allowed",
-                day.isToday && !day.hasEntry && "bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 border-2 border-blue-400 font-bold pulse"
-              )}
-              style={{ animationDelay: `${index * 20}ms` }}
-            >
-              <span>{day.day}</span>
-              
-              {/* Entry Indicators */}
-              {day.hasEntry && day.isCurrentMonth && (
-                <div className="absolute -top-1 -right-1 flex gap-1">
-                  <div className="w-3 h-3 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full shadow-lg pulse"></div>
-                  {day.hasPhoto && (
-                    <div className="w-3 h-3 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full shadow-lg pulse flex items-center justify-center">
-                      <Camera size={8} className="text-white" />
-                    </div>
-                  )}
-                </div>
-              )}
-            </button>
-          ))}
+          {calendarDays.map((day, index) => {
+            const entry = day.isCurrentMonth && day.hasEntry ? getEntry(day.dateStr) : null;
+            
+            return (
+              <button
+                key={index}
+                onClick={() => day.isCurrentMonth && handleDateClick(day.dateStr)}
+                disabled={!day.isCurrentMonth}
+                className={cn(
+                  "aspect-square p-2 text-sm relative transition-all duration-300 min-h-[44px] flex flex-col items-center justify-center rounded-xl font-medium",
+                  "slide-in-up",
+                  day.isCurrentMonth
+                    ? day.hasEntry
+                      ? "bg-gradient-to-br from-orange-100 to-orange-200 text-orange-700 hover:from-orange-200 hover:to-orange-300 shadow-md hover:scale-110 active:scale-95 cursor-pointer"
+                      : day.isToday
+                      ? "bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 border-2 border-blue-400 shadow-md hover:scale-110 active:scale-95 cursor-pointer pulse"
+                      : "hover:bg-gradient-to-br hover:from-gray-100 hover:to-gray-200 hover:shadow-md hover:scale-110 active:scale-95 cursor-pointer"
+                    : "text-gray-300 cursor-not-allowed",
+                  day.isToday && !day.hasEntry && "bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 border-2 border-blue-400 font-bold pulse"
+                )}
+                style={{ animationDelay: `${index * 20}ms` }}
+              >
+                <span>{day.day}</span>
+                
+                {/* Weather Icon */}
+                {entry?.weather && (
+                  <div className="mt-0.5">
+                    <WeatherIcon condition={entry.weather} size={12} />
+                  </div>
+                )}
+                
+                {/* Entry Indicators */}
+                {day.hasEntry && day.isCurrentMonth && (
+                  <div className="absolute -top-1 -right-1 flex gap-1">
+                    <div className="w-3 h-3 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full shadow-lg pulse"></div>
+                    {day.hasPhoto && (
+                      <div className="w-3 h-3 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full shadow-lg pulse flex items-center justify-center">
+                        <Camera size={8} className="text-white" />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 

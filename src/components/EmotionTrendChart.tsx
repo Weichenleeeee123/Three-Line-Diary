@@ -269,7 +269,12 @@ export default function EmotionTrendChart({ className }: EmotionTrendChartProps)
                       borderRadius: '8px',
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                     }}
-                    formatter={(value: any) => [`${value} ${t?.emotionChart?.days || '天'}`, '']}
+                    formatter={(value: any, name: string) => [
+                      `${value} ${t?.emotionChart?.days || '天'}`,
+                      name === '积极' ? (t?.emotionChart?.positive || '积极') :
+                      name === '平静' ? (t?.emotionChart?.neutral || '平静') :
+                      (t?.emotionChart?.negative || '消极')
+                    ]}
                   />
                 </PieChart>
               </ResponsiveContainer>

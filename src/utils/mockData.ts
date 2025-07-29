@@ -64,6 +64,14 @@ const mockSentencesEn = [
   ['Received a heartwarming message from friend', 'Deeply moved by this sincere friendship', 'Having friends is wonderful'],
 ];
 
+// 天气类型数组
+const weatherTypes = ['sunny', 'rainy', 'cloudy', 'snowy'] as const;
+
+// 生成随机天气
+function getRandomWeather(): 'sunny' | 'rainy' | 'cloudy' | 'snowy' {
+  return weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
+}
+
 // 生成过去30天的模拟数据
 export function generateMockData() {
   const today = new Date();
@@ -92,6 +100,7 @@ export function generateMockData() {
         id: `mock-${dateStr}`,
         date: dateStr,
         sentences: randomSentences as [string, string, string],
+        weather: getRandomWeather(),
         createdAt: date.toISOString(),
         updatedAt: date.toISOString()
       });
