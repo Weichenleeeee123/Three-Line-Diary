@@ -1,0 +1,66 @@
+{
+  "name": "三句话日记",
+  "short_name": "三句话日记",
+  "description": "简洁优雅的三句话日记应用，记录生活点滴",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "zh-CN",
+  "categories": ["lifestyle", "productivity"],
+  "icons": [
+    {
+      "src": "/app-icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x48",
+      "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "写日记",
+      "short_name": "写日记",
+      "description": "快速开始写今天的日记",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "查看总结",
+      "short_name": "总结",
+      "description": "查看本周总结",
+      "url": "/summary",
+      "icons": [
+        {
+          "src": "/app-icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}

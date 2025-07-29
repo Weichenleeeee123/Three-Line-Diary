@@ -460,8 +460,8 @@ export default function Profile() {
       
       {/* App Info */}
       <div className="text-center py-4 text-gray-500 text-sm">
-        <p>三句话日记 v1.0</p>
-        <p className="mt-1">简单记录，深度思考</p>
+        <p>{t?.appInfo?.name || '三句话日记'} {t?.appInfo?.version || 'v1.0'}</p>
+        <p className="mt-1">{t?.appInfo?.slogan || '简单记录，深度思考'}</p>
       </div>
       
       {/* 确认删除对话框 */}

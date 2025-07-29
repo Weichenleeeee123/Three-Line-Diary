@@ -1,10 +1,30 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My React App</title>
+    <title>三句话日记</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#f97316" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="三句话日记" />
+    <meta name="description" content="简洁优雅的三句话日记应用，记录生活点滴" />
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/app-icon.svg" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/app-icon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/app-icon.svg" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/app-icon.svg" />
+    
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-TileImage" content="/app-icon.svg" />
+    <meta name="msapplication-TileColor" content="#f97316" />
     <script type="module">
       if (import.meta.hot?.on) {
         import.meta.hot.on('vite:error', (error) => {

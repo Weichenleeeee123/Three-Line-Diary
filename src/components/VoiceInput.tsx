@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Mic, MicOff, Square, Check, RotateCcw } from 'lucide-react';
 import { tencentASR } from '../services/tencentASR';
 import { toast } from 'sonner';
+import { useI18n } from '../hooks/useI18n';
 
 interface VoiceInputProps {
   onTranscriptConfirm: (text: string) => void;
@@ -18,12 +19,15 @@ interface VoiceInputState {
 
 export const VoiceInput: React.FC<VoiceInputProps> = ({
   onTranscriptConfirm,
-  placeholder = '点击麦克风开始语音输入',
+  placeholder,
   className = ''
 }) => {
+  const { t } = useI18n();
   const [transcript, setTranscript] = useState('');
   const [listening, setListening] = useState(false);
   const browserSupportsSpeechRecognition = true; // 腾讯云ASR支持所有现代浏览器
+  
+  const defaultPlaceholder = placeholder || t?.voiceInput?.startRecording || '点击麦克风开始语音输入';
 
   const [state, setState] = useState<VoiceInputState>({
     isRecording: false,
@@ -135,7 +139,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
   useEffect(() => {
     const isConfigValid = tencentASR.isConfigValid();
     if (!isConfigValid) {
-      toast.error('腾讯云ASR配置无效，请检查环境变量');
+      toast.error(t?.voiceInput?.configInvalid || '腾讯云ASR配置无效，请检查环境变量');
     }
     
     // 页面加载时预先获取麦克风权限
@@ -149,13 +153,13 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
           console.log('麦克风权限已预先获取');
         } catch (error) {
           console.error('麦克风权限被拒绝:', error);
-          toast.error('需要麦克风权限才能使用语音输入功能，请在浏览器设置中允许麦克风访问');
+          toast.error(t?.voiceInput?.permissionDenied || '需要麦克风权限才能使用语音输入功能，请在浏览器设置中允许麦克风访问');
         }
       }
     };
     
     initPermission();
-  }, []);
+  }, [t]);
 
   // 监听录音状态变化 - 仅处理手动停止的情况
   useEffect(() => {
@@ -174,29 +178,29 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       setState(prev => ({ ...prev, hasPermission: true }));
-      toast.success('麦克风权限已获取');
+      toast.success(t?.voiceInput?.permissionGranted || '麦克风权限已获取');
     } catch (error) {
       console.error('麦克风权限被拒绝:', error);
-      toast.error('需要麦克风权限才能使用语音输入功能，请在浏览器设置中允许麦克风访问');
+      toast.error(t?.voiceInput?.permissionDenied || '需要麦克风权限才能使用语音输入功能，请在浏览器设置中允许麦克风访问');
     }
   };
 
   const startRecording = async () => {
     if (!tencentASR.isConfigValid()) {
-      toast.error('腾讯云ASR配置无效，请检查环境变量');
+      toast.error(t?.voiceInput?.configInvalid || '腾讯云ASR配置无效，请检查环境变量');
       return;
     }
 
     // 检查权限状态
     if (!state.hasPermission) {
-      toast.error('麦克风权限未获取，请刷新页面并允许麦克风访问');
+      toast.error(t?.voiceInput?.permissionDenied || '麦克风权限未获取，请刷新页面并允许麦克风访问');
       return;
     }
 
     // 初始化音频分析器
     const audioResult = await initAudioAnalyser();
     if (!audioResult) {
-      toast.error('无法访问麦克风进行音频分析');
+      toast.error(t?.voiceInput?.microphoneError || '无法访问麦克风进行音频分析');
       return;
     }
 
@@ -252,7 +256,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
       resetTranscript();
       setEditableTranscript('');
       setState(prev => ({ ...prev, showTranscript: false }));
-      toast.success('语音内容已添加');
+      toast.success(t?.voiceInput?.contentAdded || '语音内容已添加');
     }
   };
 
@@ -278,7 +282,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
 
   // 即使不支持语音识别也显示按钮，提供用户反馈
   const handleUnsupportedClick = () => {
-    toast.error('您的浏览器不支持语音识别功能，请尝试使用Chrome、Edge或Safari浏览器');
+    toast.error(t?.voiceInput?.browserNotSupported || '您的浏览器不支持语音识别功能，请尝试使用Chrome、Edge或Safari浏览器');
   };
 
   console.log('VoiceInput rendering:', { 
@@ -303,7 +307,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
           }
           text-white shadow-md hover:shadow-lg transform hover:scale-105
         `}
-        title={!browserSupportsSpeechRecognition ? '浏览器不支持语音识别' : (state.isRecording ? '停止录音' : '开始语音输入')}
+        title={!browserSupportsSpeechRecognition ? (t?.voiceInput?.browserNotSupported || '浏览器不支持语音识别') : (state.isRecording ? (t?.voiceInput?.stopRecording || '停止录音') : (t?.voiceInput?.startRecording || '开始语音输入'))}
       >
         {!browserSupportsSpeechRecognition ? (
           <MicOff className="w-4 h-4" />
@@ -331,7 +335,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
                  ></div>
                ))}
              </div>
-            <span>正在录音...</span>
+            <span>{t?.voiceInput?.recording || '正在录音...'}</span>
           </div>
           {transcript && (
             <div className="mt-2 text-sm text-gray-800 max-h-20 overflow-y-auto">
@@ -346,14 +350,14 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
         <div className="absolute top-10 right-0 bg-white rounded-lg shadow-lg p-4 min-w-64 max-w-80 z-50">
           <div className="mb-3">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              语音转换结果
+              {t?.voiceInput?.transcriptResult || '语音转换结果'}
             </label>
             <textarea
               value={editableTranscript}
               onChange={(e) => setEditableTranscript(e.target.value)}
               className="w-full p-2 border border-gray-300 rounded-md text-sm resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               rows={3}
-              placeholder="转换的文字将显示在这里..."
+              placeholder={t?.voiceInput?.transcriptPlaceholder || '转换的文字将显示在这里...'}
             />
           </div>
           
@@ -364,7 +368,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
               className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-1"
             >
               <Check className="w-4 h-4" />
-              <span>确认</span>
+              <span>{t?.voiceInput?.confirm || '确认'}</span>
             </button>
             
             <button
@@ -372,7 +376,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
               className="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-1"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>重录</span>
+              <span>{t?.voiceInput?.retry || '重录'}</span>
             </button>
             
             <button
@@ -380,7 +384,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
               className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-1"
             >
               <MicOff className="w-4 h-4" />
-              <span>取消</span>
+              <span>{t?.voiceInput?.cancel || '取消'}</span>
             </button>
           </div>
         </div>

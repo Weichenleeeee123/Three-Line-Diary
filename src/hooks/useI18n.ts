@@ -227,6 +227,83 @@ const translations = {
       saved: '保存成功',
       deleted: '删除成功',
       error: '操作失败',
+    },
+    
+    // 语音输入
+    voiceInput: {
+      startRecording: '点击麦克风开始语音输入',
+      stopRecording: '停止录音',
+      recording: '正在录音...',
+      processing: '处理中...',
+      transcriptResult: '语音转换结果',
+      transcriptPlaceholder: '转换的文字将显示在这里...',
+      confirm: '确认',
+      retry: '重录',
+      cancel: '取消',
+      permissionDenied: '需要麦克风权限才能使用语音输入功能，请在浏览器设置中允许麦克风访问',
+      permissionGranted: '麦克风权限已获取',
+      configInvalid: '腾讯云ASR配置无效，请检查环境变量',
+      microphoneError: '无法访问麦克风进行音频分析',
+      browserNotSupported: '您的浏览器不支持语音识别功能，请尝试使用Chrome、Edge或Safari浏览器',
+      contentAdded: '语音内容已添加',
+      contentTooLong: '内容超出40字限制，请缩短语音输入'
+    },
+    
+    // 日记模态框
+    journal: {
+      title: {
+        view: '查看日记',
+        new: '新建日记'
+      },
+      questions: {
+        whatHappened: '今天发生了什么？',
+        howDidYouFeel: '今天的感受如何？',
+        whatDidYouLearn: '今天学到了什么？'
+      },
+      placeholders: {
+        whatHappened: '记录今天发生的事情...',
+        howDidYouFeel: '分享今天的心情和感受...',
+        whatDidYouLearn: '记录今天的收获和学习...'
+      },
+      voice: {
+        whatHappened: '点击开始语音输入今天发生的事情',
+        howDidYouFeel: '点击开始语音输入今天的感受',
+        whatDidYouLearn: '点击开始语音输入今天的学习收获'
+      },
+      photo: {
+        title: '照片记录',
+        add: '添加照片',
+        change: '更换照片',
+        remove: '移除照片',
+        processing: '处理中...'
+      },
+      actions: {
+        save: '保存',
+        edit: '编辑',
+        cancel: '取消',
+        close: '关闭'
+      },
+      messages: {
+        saved: '日记已保存',
+        updated: '日记已更新',
+        photoAdded: '照片已添加',
+        photoRemoved: '照片已移除',
+        photoProcessFailed: '照片处理失败',
+        userCancelled: '用户取消选择'
+      },
+      validation: {
+        atLeastOneSentence: '请至少填写一句话',
+        imageTooLarge: '图片文件过大，请选择小于5MB的图片'
+      },
+      noRecord: '暂无记录'
+    },
+    
+    // 应用信息
+    appInfo: {
+      name: '三句话日记',
+      version: 'v1.0',
+      slogan: '简单记录，深度思考',
+      description: '点击添加照片记录美好时刻'
     }
   },
   
@@ -448,6 +525,83 @@ const translations = {
       saved: 'Saved successfully',
       deleted: 'Deleted successfully',
       error: 'Operation failed',
+    },
+    
+    // Voice Input
+    voiceInput: {
+      startRecording: 'Click microphone to start voice input',
+      stopRecording: 'Stop recording',
+      recording: 'Recording...',
+      processing: 'Processing...',
+      transcriptResult: 'Voice transcription result',
+      transcriptPlaceholder: 'Transcribed text will appear here...',
+      confirm: 'Confirm',
+      retry: 'Retry',
+      cancel: 'Cancel',
+      permissionDenied: 'Microphone permission is required for voice input. Please allow microphone access in browser settings',
+      permissionGranted: 'Microphone permission granted',
+      configInvalid: 'Tencent Cloud ASR configuration is invalid, please check environment variables',
+      microphoneError: 'Unable to access microphone for audio analysis',
+      browserNotSupported: 'Your browser does not support speech recognition. Please try Chrome, Edge or Safari',
+      contentAdded: 'Voice content added',
+      contentTooLong: 'Content exceeds 40 character limit, please shorten voice input'
+    },
+    
+    // Journal Modal
+    journal: {
+      title: {
+        view: 'View Journal',
+        new: 'New Journal'
+      },
+      questions: {
+        whatHappened: 'What happened today?',
+        howDidYouFeel: 'How did you feel today?',
+        whatDidYouLearn: 'What did you learn today?'
+      },
+      placeholders: {
+        whatHappened: 'Record what happened today...',
+        howDidYouFeel: 'Share your mood and feelings today...',
+        whatDidYouLearn: 'Record your gains and learnings today...'
+      },
+      voice: {
+        whatHappened: 'Click to start voice input for what happened today',
+        howDidYouFeel: 'Click to start voice input for your feelings today',
+        whatDidYouLearn: 'Click to start voice input for your learnings today'
+      },
+      photo: {
+        title: 'Photo Record',
+        add: 'Add Photo',
+        change: 'Change Photo',
+        remove: 'Remove Photo',
+        processing: 'Processing...'
+      },
+      actions: {
+        save: 'Save',
+        edit: 'Edit',
+        cancel: 'Cancel',
+        close: 'Close'
+      },
+      messages: {
+        saved: 'Journal saved',
+        updated: 'Journal updated',
+        photoAdded: 'Photo added',
+        photoRemoved: 'Photo removed',
+        photoProcessFailed: 'Photo processing failed',
+        userCancelled: 'User cancelled selection'
+      },
+      validation: {
+        atLeastOneSentence: 'Please fill in at least one sentence',
+        imageTooLarge: 'Image file is too large, please select an image smaller than 5MB'
+      },
+      noRecord: 'No record'
+    },
+    
+    // App Info
+    appInfo: {
+      name: 'Three Line Diary',
+      version: 'v1.0',
+      slogan: 'Simple recording, deep thinking',
+      description: 'Click to add photos and capture beautiful moments'
     }
   }
 };

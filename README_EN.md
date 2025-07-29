@@ -33,8 +33,13 @@ Just three simple sentences, yet they capture a complete day's essence!
 
 ### 📝 Core Features
 - 🖊️ **Three-sentence recording** - Capture daily insights with concise three-sentence entries
+- 🎤 **Voice recognition** - Tencent Cloud ASR real-time speech-to-text, support voice input for diary content
+- 📷 **Photo diary** - Support taking photos or selecting images to record visual memories
 - 📅 **Calendar view** - Intuitively browse historical records, click dates for details
+- 👆 **Swipe gestures** - Summary page supports smooth left-right swipe to switch weekly summaries, keyboard arrow key support
+- 📱 **PWA support** - Install to desktop, offline usage, native app experience
 - 🤖 **AI smart summary** - Gemini AI generates weekly reports and mood insights
+- 📤 **Share functionality** - Optimized image sharing preview interface, support saving and social sharing
 - 📊 **Data management** - Support editing, deleting, and exporting diary entries
 - 🔍 **Search functionality** - Quickly find historical records
 - 📈 **Statistics analysis** - Track recording days, word count, and other metrics
@@ -46,9 +51,13 @@ Just three simple sentences, yet they capture a complete day's essence!
 - 🌐 **Multi-language support** - Complete Chinese/English interface switching
 - 📱 **Responsive design** - Perfect adaptation for mobile and desktop devices
 - 🎨 **Modern UI** - Clean and beautiful interface design
+- 🎤 **Smart voice** - Real-time voice recognition, audio visualization feedback, smooth voice input experience
+- 🖼️ **Image preview optimization** - Carefully adjusted button layout and spacing, perfect mobile experience
 - 💾 **Local storage** - Secure data storage locally
 - 🔊 **Sound feedback** - Elegant interaction sound effects
-- ⚡ **Smooth animations** - Silky typewriter effects
+- ⚡ **Smooth animations** - Silky typewriter effects and swipe gesture interactions
+- 🎯 **Gesture interaction** - Support touch swipe and keyboard navigation for multiple interaction methods
+- 📲 **PWA experience** - Support desktop installation, offline caching, push notifications, native app-like experience
 
 </td>
 </tr>
@@ -69,6 +78,8 @@ Just three simple sentences, yet they capture a complete day's essence!
 - **State Management**: Zustand
 - **Icon Library**: Lucide React
 - **AI Service**: Google Gemini API
+- **Voice Recognition**: Tencent Cloud ASR
+- **PWA**: Service Worker + Web App Manifest
 - **Deployment**: Tencent Cloud Development
 
 ## 🚀 Quick Start
@@ -131,6 +142,13 @@ npm run check
 - **Weekly reports** - Automatically analyze your records weekly, generate deep summaries
 - **Mood insights** - AI analyzes emotional changes, provides personalized suggestions
 - **Configure API** - Set up Gemini API key in profile to enable AI features
+
+### 📲 PWA Installation & Usage
+- **Mobile installation** - Browser will automatically show "Install to desktop" prompt, click to install
+- **Desktop installation** - Chrome/Edge address bar will show install icon, click to install as desktop app
+- **Offline usage** - Works normally even when offline after installation, data automatically cached
+- **Native experience** - Full-screen display, fast startup, indistinguishable from native apps
+- **Shortcuts** - Support "Write Diary" and "View Summary" shortcuts for direct access to specific features
 
 ### 🏆 Unlock Achievements
 - **Consistent recording** - Unlock milestone achievements through consecutive recording

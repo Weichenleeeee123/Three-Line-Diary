@@ -4,6 +4,7 @@ import useJournalStore from '@/hooks/useJournalStore';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { VoiceInput } from './VoiceInput';
+import { useI18n } from '../hooks/useI18n';
 
 interface JournalModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface JournalModalProps {
 
 export default function JournalModal({ isOpen, onClose, date }: JournalModalProps) {
   const { getEntry, addEntry, updateEntry } = useJournalStore();
+  const { t } = useI18n();
   const [sentences, setSentences] = useState(['', '', '']);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -38,17 +40,17 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
     const filledSentences = sentences.filter(s => s.trim().length > 0);
     
     if (filledSentences.length === 0) {
-      toast.error('请至少填写一句话');
-      return;
-    }
-
-    if (existingEntry) {
-      updateEntry(date, sentences as [string, string, string], selectedImage || undefined);
-      toast.success('日记已更新');
-    } else {
-      addEntry(date, sentences as [string, string, string], selectedImage || undefined);
-      toast.success('日记已保存');
-    }
+        toast.error(t.journal.validation.atLeastOneSentence);
+        return;
+      }
+      
+      if (existingEntry) {
+        updateEntry(date, sentences as [string, string, string], selectedImage || undefined);
+        toast.success(t.journal.messages.updated);
+      } else {
+        addEntry(date, sentences as [string, string, string], selectedImage || undefined);
+        toast.success(t.journal.messages.saved);
+      }
     
     setIsEditing(false);
   };
@@ -77,31 +79,30 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
       });
       
       if (file.size > 5 * 1024 * 1024) {
-        toast.error('图片文件过大，请选择小于5MB的图片');
-        return;
-      }
-      
-      const reader = new FileReader();
-      const base64 = await new Promise<string>((resolve) => {
-        reader.onload = () => resolve(reader.result as string);
+          toast.error(t.journal.validation.imageTooLarge);
+          return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const base64 = e.target?.result as string;
+          setSelectedImage(base64);
+          toast.success(t.journal.messages.photoAdded);
+        };
         reader.readAsDataURL(file);
-      });
-      
-      setSelectedImage(base64);
-      toast.success('照片已添加');
-    } catch (error) {
-      if (error instanceof Error && error.message !== '用户取消选择') {
-        toast.error('照片处理失败');
+      } catch (error) {
+        if (error instanceof Error && error.message !== t.journal.messages.userCancelled) {
+          toast.error(t.journal.messages.photoProcessFailed);
+        }
+      } finally {
+        setIsProcessingImage(false);
       }
-    } finally {
-      setIsProcessingImage(false);
-    }
-  };
-
-  const handleImageRemove = () => {
-    setSelectedImage(null);
-    toast.success('照片已移除');
-  };
+    };
+  
+    const handleImageRemove = () => {
+      setSelectedImage(null);
+      toast.success(t.journal.messages.photoRemoved);
+    };
 
 
 
@@ -124,8 +125,8 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <div>
             <h2 className="text-lg font-semibold text-gray-800">
-              {existingEntry ? '查看日记' : '新建日记'}
-            </h2>
+                {existingEntry ? t.journal.title.view : t.journal.title.new}
+              </h2>
             <p className="text-sm text-gray-500">{formatDate(date)}</p>
           </div>
           <button
@@ -142,117 +143,117 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                今天发生了什么？
-              </label>
-              {isEditing ? (
-                <div className="relative">
-                  <textarea
-                    value={sentences[0]}
-                    onChange={(e) => setSentences([e.target.value, sentences[1], sentences[2]])}
-                    placeholder="记录今天发生的事情..."
-                    className="w-full p-3 pr-12 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    rows={3}
-                  />
-                  <div className="absolute top-2 right-2 z-30">
-                    <VoiceInput
-                      onTranscriptConfirm={(text) => {
-                        const newText = sentences[0] ? sentences[0] + ' ' + text : text;
-                        setSentences([newText, sentences[1], sentences[2]]);
-                      }}
-                      placeholder="点击开始语音输入今天发生的事情"
+                  {t.journal.questions.whatHappened}
+                </label>
+                {isEditing ? (
+                  <div className="relative">
+                    <textarea
+                      value={sentences[0]}
+                      onChange={(e) => setSentences([e.target.value, sentences[1], sentences[2]])}
+                      placeholder={t.journal.placeholders.whatHappened}
+                      className="w-full p-3 pr-12 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      rows={3}
                     />
+                    <div className="absolute top-2 right-2 z-30">
+                      <VoiceInput
+                        onTranscriptConfirm={(text) => {
+                          const newText = sentences[0] ? sentences[0] + ' ' + text : text;
+                          setSentences([newText, sentences[1], sentences[2]]);
+                        }}
+                        placeholder={t.journal.voice.whatHappened}
+                      />
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="p-3 bg-gray-50 rounded-lg min-h-[80px] flex items-center">
-                  <p className="text-gray-700">
-                    {sentences[0] || '暂无记录'}
-                  </p>
-                </div>
-              )}
+                ) : (
+                  <div className="p-3 bg-gray-50 rounded-lg min-h-[80px] flex items-center">
+                    <p className="text-gray-700">
+                      {sentences[0] || t.journal.noRecord}
+                    </p>
+                  </div>
+                )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                今天的感受如何？
-              </label>
-              {isEditing ? (
-                <div className="relative">
-                  <textarea
-                    value={sentences[1]}
-                    onChange={(e) => setSentences([sentences[0], e.target.value, sentences[2]])}
-                    placeholder="分享今天的心情和感受..."
-                    className="w-full p-3 pr-12 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    rows={3}
-                  />
-                  <div className="absolute top-2 right-2 z-30">
-                    <VoiceInput
-                      onTranscriptConfirm={(text) => {
-                        const newText = sentences[1] ? sentences[1] + ' ' + text : text;
-                        setSentences([sentences[0], newText, sentences[2]]);
-                      }}
-                      placeholder="点击开始语音输入今天的感受"
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t.journal.questions.howDidYouFeel}
+                </label>
+                {isEditing ? (
+                  <div className="relative">
+                    <textarea
+                      value={sentences[1]}
+                      onChange={(e) => setSentences([sentences[0], e.target.value, sentences[2]])}
+                      placeholder={t.journal.placeholders.howDidYouFeel}
+                      className="w-full p-3 pr-12 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      rows={3}
                     />
+                    <div className="absolute top-2 right-2 z-30">
+                      <VoiceInput
+                        onTranscriptConfirm={(text) => {
+                          const newText = sentences[1] ? sentences[1] + ' ' + text : text;
+                          setSentences([sentences[0], newText, sentences[2]]);
+                        }}
+                        placeholder={t.journal.voice.howDidYouFeel}
+                      />
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="p-3 bg-gray-50 rounded-lg min-h-[80px] flex items-center">
-                  <p className="text-gray-700">
-                    {sentences[1] || '暂无记录'}
-                  </p>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="p-3 bg-gray-50 rounded-lg min-h-[80px] flex items-center">
+                    <p className="text-gray-700">
+                      {sentences[1] || t.journal.noRecord}
+                    </p>
+                  </div>
+                )}
+              </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                今天学到了什么？
-              </label>
-              {isEditing ? (
-                <div className="relative">
-                  <textarea
-                    value={sentences[2]}
-                    onChange={(e) => setSentences([sentences[0], sentences[1], e.target.value])}
-                    placeholder="记录今天的收获和学习..."
-                    className="w-full p-3 pr-12 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    rows={3}
-                  />
-                  <div className="absolute top-2 right-2 z-30">
-                    <VoiceInput
-                      onTranscriptConfirm={(text) => {
-                        const newText = sentences[2] ? sentences[2] + ' ' + text : text;
-                        setSentences([sentences[0], sentences[1], newText]);
-                      }}
-                      placeholder="点击开始语音输入今天的学习收获"
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t.journal.questions.whatDidYouLearn}
+                </label>
+                {isEditing ? (
+                  <div className="relative">
+                    <textarea
+                      value={sentences[2]}
+                      onChange={(e) => setSentences([sentences[0], sentences[1], e.target.value])}
+                      placeholder={t.journal.placeholders.whatDidYouLearn}
+                      className="w-full p-3 pr-12 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      rows={3}
                     />
+                    <div className="absolute top-2 right-2 z-30">
+                      <VoiceInput
+                        onTranscriptConfirm={(text) => {
+                          const newText = sentences[2] ? sentences[2] + ' ' + text : text;
+                          setSentences([sentences[0], sentences[1], newText]);
+                        }}
+                        placeholder={t.journal.voice.whatDidYouLearn}
+                      />
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="p-3 bg-gray-50 rounded-lg min-h-[80px] flex items-center">
-                  <p className="text-gray-700">
-                    {sentences[2] || '暂无记录'}
-                  </p>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="p-3 bg-gray-50 rounded-lg min-h-[80px] flex items-center">
+                    <p className="text-gray-700">
+                      {sentences[2] || t.journal.noRecord}
+                    </p>
+                  </div>
+                )}
+              </div>
           </div>
 
           {/* Photo Section */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="block text-sm font-medium text-gray-700">
-                📷 照片记录
-              </label>
-              {selectedImage && isEditing && (
-                <button
-                  onClick={handleImageRemove}
-                  className="text-red-500 hover:text-red-600 transition-colors p-1 rounded"
-                  title="移除照片"
-                >
-                  <X size={16} />
-                </button>
-              )}
-            </div>
+                <label className="block text-sm font-medium text-gray-700">
+                  📷 {t.journal.photo.title}
+                </label>
+                {selectedImage && isEditing && (
+                  <button
+                    onClick={handleImageRemove}
+                    className="text-red-500 hover:text-red-600 transition-colors p-1 rounded"
+                    title={t.journal.photo.remove}
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
             
             {selectedImage ? (
               <div className="space-y-3">
@@ -265,12 +266,12 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
                   {isEditing && (
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 rounded-lg flex items-center justify-center">
                       <button
-                        onClick={handleImageSelect}
-                        disabled={isProcessingImage}
-                        className="opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white text-gray-800 px-3 py-2 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 text-sm font-medium"
-                      >
-                        {isProcessingImage ? '处理中...' : '更换照片'}
-                      </button>
+                          onClick={handleImageSelect}
+                          disabled={isProcessingImage}
+                          className="opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white text-gray-800 px-3 py-2 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 text-sm font-medium"
+                        >
+                          {isProcessingImage ? t.journal.photo.processing : t.journal.photo.change}
+                        </button>
                     </div>
                   )}
                 </div>
@@ -290,12 +291,12 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
                   {isProcessingImage ? (
                     <div className="flex flex-col items-center gap-1">
                       <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                      <span className="text-xs text-gray-600">处理中...</span>
+                      <span className="text-xs text-gray-600">{t.journal.photo.processing}</span>
                     </div>
                   ) : (
                     <>
                       <Camera size={24} className="text-gray-400" />
-                      <span className="text-sm text-gray-600">添加照片</span>
+                      <span className="text-sm text-gray-600">{t.journal.photo.add}</span>
                     </>
                   )}
                 </button>
@@ -308,33 +309,33 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
             {isEditing ? (
               <>
                 <button
-                  onClick={handleSave}
-                  className="flex-1 bg-orange-500 text-white py-3 rounded-lg font-medium hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Save size={18} />
-                  保存
-                </button>
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="px-6 py-3 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                >
-                  取消
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="flex-1 bg-orange-500 text-white py-3 rounded-lg font-medium hover:bg-orange-600 transition-colors"
-                >
-                  编辑
-                </button>
-                <button
-                  onClick={handleClose}
-                  className="px-6 py-3 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                >
-                  关闭
-                </button>
+                    onClick={handleSave}
+                    className="flex-1 bg-orange-500 text-white py-3 rounded-lg font-medium hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Save size={18} />
+                    {t.journal.actions.save}
+                  </button>
+                  <button
+                    onClick={() => setIsEditing(false)}
+                    className="px-6 py-3 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    {t.journal.actions.cancel}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="flex-1 bg-orange-500 text-white py-3 rounded-lg font-medium hover:bg-orange-600 transition-colors"
+                  >
+                    {t.journal.actions.edit}
+                  </button>
+                  <button
+                    onClick={handleClose}
+                    className="px-6 py-3 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    {t.journal.actions.close}
+                  </button>
               </>
             )}
           </div>

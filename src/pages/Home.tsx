@@ -226,7 +226,7 @@ export default function Home() {
                     if (newText.length <= 40) {
                       handleSentenceChange(index, newText);
                     } else {
-                      toast.error('内容超出40字限制，请缩短语音输入');
+                      toast.error(t?.voiceInput?.contentTooLong || '内容超出40字限制，请缩短语音输入');
                     }
                   }}
                   placeholder={`点击开始语音输入${t.home.placeholders[index]}`}
@@ -298,7 +298,7 @@ export default function Home() {
               <>
                 <Camera size={32} className="text-gray-400" />
                 <span className="text-gray-600 font-medium">{t.home.addPhoto}</span>
-                <span className="text-xs text-gray-500">点击添加照片记录美好时刻</span>
+                <span className="text-xs text-gray-500">{t?.appInfo?.description || '点击添加照片记录美好时刻'}</span>
               </>
             )}
           </button>
