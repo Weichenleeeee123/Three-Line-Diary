@@ -122,7 +122,7 @@ export default function Home() {
       // 压缩图片
       const compressedImage = await compressImage(file);
       setSelectedImage(compressedImage);
-      toast.success(t.home.photoAdded);
+      // 移除重复的toast提示，保留JournalModal中的提示
     } catch (error) {
       if (error instanceof Error && error.message !== '用户取消选择') {
         toast.error(t.home.photoError);
