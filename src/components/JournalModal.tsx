@@ -3,6 +3,7 @@ import { X, Camera, Save } from 'lucide-react';
 import useJournalStore from '@/hooks/useJournalStore';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { VoiceInput } from './VoiceInput';
 
 interface JournalModalProps {
   isOpen: boolean;
@@ -118,7 +119,7 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
 
   return (
     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <div>
@@ -136,7 +137,7 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-4 overflow-y-auto flex-1">
           {/* Three Sentences */}
           <div className="space-y-4">
             <div>
@@ -144,13 +145,24 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
                 今天发生了什么？
               </label>
               {isEditing ? (
-                <textarea
-                  value={sentences[0]}
-                  onChange={(e) => setSentences([e.target.value, sentences[1], sentences[2]])}
-                  placeholder="记录今天发生的事情..."
-                  className="w-full p-3 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  rows={3}
-                />
+                <div className="relative">
+                  <textarea
+                    value={sentences[0]}
+                    onChange={(e) => setSentences([e.target.value, sentences[1], sentences[2]])}
+                    placeholder="记录今天发生的事情..."
+                    className="w-full p-3 pr-12 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    rows={3}
+                  />
+                  <div className="absolute top-2 right-2 z-30">
+                    <VoiceInput
+                      onTranscriptConfirm={(text) => {
+                        const newText = sentences[0] ? sentences[0] + ' ' + text : text;
+                        setSentences([newText, sentences[1], sentences[2]]);
+                      }}
+                      placeholder="点击开始语音输入今天发生的事情"
+                    />
+                  </div>
+                </div>
               ) : (
                 <div className="p-3 bg-gray-50 rounded-lg min-h-[80px] flex items-center">
                   <p className="text-gray-700">
@@ -165,13 +177,24 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
                 今天的感受如何？
               </label>
               {isEditing ? (
-                <textarea
-                  value={sentences[1]}
-                  onChange={(e) => setSentences([sentences[0], e.target.value, sentences[2]])}
-                  placeholder="分享今天的心情和感受..."
-                  className="w-full p-3 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  rows={3}
-                />
+                <div className="relative">
+                  <textarea
+                    value={sentences[1]}
+                    onChange={(e) => setSentences([sentences[0], e.target.value, sentences[2]])}
+                    placeholder="分享今天的心情和感受..."
+                    className="w-full p-3 pr-12 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    rows={3}
+                  />
+                  <div className="absolute top-2 right-2 z-30">
+                    <VoiceInput
+                      onTranscriptConfirm={(text) => {
+                        const newText = sentences[1] ? sentences[1] + ' ' + text : text;
+                        setSentences([sentences[0], newText, sentences[2]]);
+                      }}
+                      placeholder="点击开始语音输入今天的感受"
+                    />
+                  </div>
+                </div>
               ) : (
                 <div className="p-3 bg-gray-50 rounded-lg min-h-[80px] flex items-center">
                   <p className="text-gray-700">
@@ -186,13 +209,24 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
                 今天学到了什么？
               </label>
               {isEditing ? (
-                <textarea
-                  value={sentences[2]}
-                  onChange={(e) => setSentences([sentences[0], sentences[1], e.target.value])}
-                  placeholder="记录今天的收获和学习..."
-                  className="w-full p-3 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  rows={3}
-                />
+                <div className="relative">
+                  <textarea
+                    value={sentences[2]}
+                    onChange={(e) => setSentences([sentences[0], sentences[1], e.target.value])}
+                    placeholder="记录今天的收获和学习..."
+                    className="w-full p-3 pr-12 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    rows={3}
+                  />
+                  <div className="absolute top-2 right-2 z-30">
+                    <VoiceInput
+                      onTranscriptConfirm={(text) => {
+                        const newText = sentences[2] ? sentences[2] + ' ' + text : text;
+                        setSentences([sentences[0], sentences[1], newText]);
+                      }}
+                      placeholder="点击开始语音输入今天的学习收获"
+                    />
+                  </div>
+                </div>
               ) : (
                 <div className="p-3 bg-gray-50 rounded-lg min-h-[80px] flex items-center">
                   <p className="text-gray-700">

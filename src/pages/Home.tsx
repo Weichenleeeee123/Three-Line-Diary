@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { Save, Quote, RefreshCw, Camera, Image, X } from 'lucide-react';
 import { toast } from 'sonner';
 import useJournalStore from '@/hooks/useJournalStore';
+// 移除冗余的语音识别服务导入，统一使用VoiceInput组件中的tencentASR
 import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
 import TypewriterText from '@/components/TypewriterText';
 import CelebrationModal from '@/components/CelebrationModal';
+import { VoiceInput } from '@/components/VoiceInput';
 import { playDiarySaveSound, preloadSounds } from '@/services/soundService';
 import { compressImage, validateImageFile, validateImageSize, selectImage } from '@/utils/imageUtils';
 
@@ -44,6 +46,8 @@ export default function Home() {
 
     // Preload sounds for better performance
     preloadSounds();
+    
+    // 麦克风权限现在由VoiceInput组件统一管理，无需在此处重复请求
   }, [today, getEntry, t.home.motivationalQuotes]);
 
   const refreshQuote = () => {
@@ -200,20 +204,35 @@ export default function Home() {
             "space-y-2 slide-in-up",
             `fade-in-delay-${index + 1}`
           )}>
-            <textarea
-              value={sentence}
-              onChange={(e) => handleSentenceChange(index, e.target.value)}
-              placeholder={t.home.placeholders[index]}
-              className={cn(
-                "w-full p-4 border-2 rounded-xl resize-none transition-all duration-300 input-focus",
-                "focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100",
-                sentence.trim().length > 0 
-                  ? "border-orange-300 bg-orange-50 shadow-sm" 
-                  : "border-gray-200 bg-white hover:border-gray-300"
-              )}
-              rows={3}
-              maxLength={40}
-            />
+            <div className="relative">
+              <textarea
+                value={sentence}
+                onChange={(e) => handleSentenceChange(index, e.target.value)}
+                placeholder={t.home.placeholders[index]}
+                className={cn(
+                  "w-full p-4 pr-12 border-2 rounded-xl resize-none transition-all duration-300 input-focus",
+                  "focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100",
+                  sentence.trim().length > 0 
+                    ? "border-orange-300 bg-orange-50 shadow-sm" 
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                )}
+                rows={3}
+                maxLength={40}
+              />
+              <div className="absolute top-4 right-2 z-30">
+                <VoiceInput
+                  onTranscriptConfirm={(text) => {
+                    const newText = sentence ? sentence + ' ' + text : text;
+                    if (newText.length <= 40) {
+                      handleSentenceChange(index, newText);
+                    } else {
+                      toast.error('内容超出40字限制，请缩短语音输入');
+                    }
+                  }}
+                  placeholder={`点击开始语音输入${t.home.placeholders[index]}`}
+                />
+              </div>
+            </div>
             <div className="flex justify-between text-xs text-gray-500">
               <span>{t.home.sentenceLabel.replace('{index}', (index + 1).toString())}</span>
               <span className={cn(

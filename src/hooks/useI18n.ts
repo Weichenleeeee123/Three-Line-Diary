@@ -122,7 +122,8 @@ const translations = {
       sentences: '句话',
       summaryGenerationFailed: 'AI总结生成失败，请稍后重试',
       copiedToClipboard: '总结已复制到剪贴板',
-      shareFailed: '分享失败'
+      shareFailed: '分享失败',
+      retry: '重试'
     },
     
     // 个人资料
@@ -342,7 +343,8 @@ const translations = {
       sentences: 'sentences',
       summaryGenerationFailed: 'AI summary generation failed, please try again later',
       copiedToClipboard: 'Summary copied to clipboard',
-      shareFailed: 'Share failed'
+      shareFailed: 'Share failed',
+      retry: 'Retry'
     },
     
     // Profile
