@@ -8,8 +8,10 @@ import { cn } from '@/lib/utils';
 import TypewriterText from '@/components/TypewriterText';
 import CelebrationModal from '@/components/CelebrationModal';
 import { VoiceInput } from '@/components/VoiceInput';
+import WeatherIcon from '@/components/WeatherIcon';
 import { playDiarySaveSound, preloadSounds } from '@/services/soundService';
 import { compressImage, validateImageFile, validateImageSize, selectImage } from '@/utils/imageUtils';
+import { getTodayWeather, type WeatherCondition } from '@/services/weatherService';
 
 
 export default function Home() {
@@ -21,6 +23,8 @@ export default function Home() {
   const [isFirstTimeToday, setIsFirstTimeToday] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [weather, setWeather] = useState<WeatherCondition | null>(null);
+  const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   const { addEntry, updateEntry, getEntry } = useJournalStore();
   const { t, language } = useI18n();
   
@@ -42,6 +46,28 @@ export default function Home() {
     if (existingEntry) {
       setSentences(existingEntry.sentences);
       setSelectedImage(existingEntry.image || null);
+      // 如果已有日记记录且包含天气信息，使用保存的天气
+      if (existingEntry.weather) {
+        setWeather(existingEntry.weather);
+      }
+    }
+
+    // Load today's weather
+    const loadTodayWeather = async () => {
+      try {
+        setIsLoadingWeather(true);
+        const weatherData = await getTodayWeather();
+        setWeather(weatherData.condition);
+      } catch (error) {
+        console.warn('Failed to load weather:', error);
+      } finally {
+        setIsLoadingWeather(false);
+      }
+    };
+
+    // 如果没有已保存的天气信息，则获取新的天气数据
+    if (!existingEntry?.weather) {
+      loadTodayWeather();
     }
 
     // Preload sounds for better performance
@@ -123,12 +149,12 @@ export default function Home() {
     const isFirstTime = !existingEntry;
     
     if (existingEntry) {
-      updateEntry(today, sentences, selectedImage || undefined);
+      updateEntry(today, sentences, selectedImage || undefined, weather || undefined);
       toast.success(t.home.updated);
       // Play sound effect for updates
       playDiarySaveSound();
     } else {
-      addEntry(today, sentences, selectedImage || undefined);
+      addEntry(today, sentences, selectedImage || undefined, weather || undefined);
       toast.success(t.home.saved);
       setIsFirstTimeToday(isFirstTime);
       setShowCelebration(true);
@@ -178,7 +204,14 @@ export default function Home() {
           <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
             <span className="wiggle">✏️</span> {t.home.todayThreeSentences}
           </h2>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
+            {/* 天气图标 */}
+            {weather && (
+              <WeatherIcon condition={weather} size={20} showTooltip={true} />
+            )}
+            {isLoadingWeather && (
+              <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+            )}
             <div className="flex space-x-1">
               {[1, 2, 3].map((i) => (
                 <div

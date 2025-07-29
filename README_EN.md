@@ -35,6 +35,7 @@ Just three simple sentences, yet they capture a complete day's essence!
 - 🖊️ **Three-sentence recording** - Capture daily insights with concise three-sentence entries
 - 🎤 **Voice recognition** - Tencent Cloud ASR real-time speech-to-text, support voice input for diary content
 - 📷 **Photo diary** - Support taking photos or selecting images to record visual memories
+- 🌤️ **Weather recording** - Automatically fetch and display daily weather conditions, adding contextual information to diary entries
 - 📅 **Calendar view** - Intuitively browse historical records, click dates for details
 - 👆 **Swipe gestures** - Summary page supports smooth left-right swipe to switch weekly summaries, keyboard arrow key support
 - 📱 **PWA support** - Install to desktop, offline usage, native app experience

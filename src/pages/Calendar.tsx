@@ -4,6 +4,7 @@ import useJournalStore from '@/hooks/useJournalStore';
 import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
 import JournalModal from '@/components/JournalModal';
+import WeatherIcon from '@/components/WeatherIcon';
 
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -198,7 +199,12 @@ export default function Calendar() {
                     className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 cursor-pointer hover:from-orange-50 hover:to-orange-100 transition-all duration-300 hover:scale-105 active:scale-95 card-hover shadow-sm hover:shadow-md border border-gray-200"
                   >
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-bold text-gray-700">{dateStr}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-gray-700">{dateStr}</span>
+                        {entry.weather && (
+                          <WeatherIcon condition={entry.weather} size={16} />
+                        )}
+                      </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded-full">{filledSentences.length}/3</span>
                         {entry.image && (

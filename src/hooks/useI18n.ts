@@ -320,6 +320,16 @@ const translations = {
       trendStable: '情绪保持稳定',
       noData: '暂无数据，开始写日记来分析你的情绪趋势吧！',
       days: '天'
+    },
+    
+    // 天气
+    weather: {
+      sunny: '晴朗',
+      rainy: '下雨',
+      cloudy: '多云',
+      snowy: '下雪',
+      loading: '获取天气中...',
+      failed: '天气获取失败'
     }
   },
   
@@ -634,6 +644,16 @@ const translations = {
       trendStable: 'Emotion remains stable',
       noData: 'No data available. Start writing diary entries to analyze your emotion trends!',
       days: 'days'
+    },
+    
+    // Weather
+    weather: {
+      sunny: 'Sunny',
+      rainy: 'Rainy',
+      cloudy: 'Cloudy',
+      snowy: 'Snowy',
+      loading: 'Loading weather...',
+      failed: 'Failed to load weather'
     }
   }
 };

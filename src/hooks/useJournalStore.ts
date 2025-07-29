@@ -6,6 +6,7 @@ export interface JournalEntry {
   date: string; // YYYY-MM-DD format
   sentences: [string, string, string];
   image?: string; // Base64 encoded image data
+  weather?: 'sunny' | 'rainy' | 'cloudy' | 'snowy'; // Weather condition
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,8 +23,8 @@ interface JournalStore {
   entries: JournalEntry[];
   
   // Actions
-  addEntry: (date: string, sentences: [string, string, string], image?: string) => void;
-  updateEntry: (date: string, sentences: [string, string, string], image?: string) => void;
+  addEntry: (date: string, sentences: [string, string, string], image?: string, weather?: string) => void;
+  updateEntry: (date: string, sentences: [string, string, string], image?: string, weather?: string) => void;
   deleteEntry: (date: string) => void;
   deleteAllEntries: () => void;
   getEntry: (date: string) => JournalEntry | undefined;
@@ -37,12 +38,13 @@ const useJournalStore = create<JournalStore>()(persist(
   (set, get) => ({
     entries: [],
     
-    addEntry: (date: string, sentences: [string, string, string], image?: string) => {
+    addEntry: (date: string, sentences: [string, string, string], image?: string, weather?: string) => {
       const newEntry: JournalEntry = {
         id: `${date}-${Date.now()}`,
         date,
         sentences,
         image,
+        weather: weather as 'sunny' | 'rainy' | 'cloudy' | 'snowy',
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -52,11 +54,11 @@ const useJournalStore = create<JournalStore>()(persist(
       }));
     },
     
-    updateEntry: (date: string, sentences: [string, string, string], image?: string) => {
+    updateEntry: (date: string, sentences: [string, string, string], image?: string, weather?: string) => {
       set((state) => ({
         entries: state.entries.map(entry => 
           entry.date === date 
-            ? { ...entry, sentences, image, updatedAt: new Date() }
+            ? { ...entry, sentences, image, weather: weather as 'sunny' | 'rainy' | 'cloudy' | 'snowy', updatedAt: new Date() }
             : entry
         )
       }));

@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { VoiceInput } from './VoiceInput';
 import { useI18n } from '../hooks/useI18n';
+import WeatherIcon from './WeatherIcon';
+import { getTodayWeather, WeatherCondition } from '../services/weatherService';
 
 interface JournalModalProps {
   isOpen: boolean;
@@ -19,6 +21,8 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
   const [isEditing, setIsEditing] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [weather, setWeather] = useState<WeatherCondition | null>(null);
+  const [isLoadingWeather, setIsLoadingWeather] = useState(false);
 
   const existingEntry = getEntry(date);
 
@@ -27,14 +31,31 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
       if (existingEntry) {
         setSentences(existingEntry.sentences);
         setSelectedImage(existingEntry.image || null);
+        setWeather(existingEntry.weather || null);
         setIsEditing(false);
       } else {
         setSentences(['', '', '']);
         setSelectedImage(null);
+        setWeather(null);
         setIsEditing(true);
+        // 自动获取今日天气
+        loadTodayWeather();
       }
     }
   }, [isOpen, date, existingEntry]);
+
+  const loadTodayWeather = async () => {
+    try {
+      setIsLoadingWeather(true);
+      const weatherData = await getTodayWeather();
+      setWeather(weatherData.condition);
+    } catch (error) {
+      console.warn('Failed to load weather:', error);
+      // 静默失败，不显示错误提示
+    } finally {
+      setIsLoadingWeather(false);
+    }
+  };
 
   const handleSave = () => {
     const filledSentences = sentences.filter(s => s.trim().length > 0);
@@ -45,10 +66,10 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
       }
       
       if (existingEntry) {
-        updateEntry(date, sentences as [string, string, string], selectedImage || undefined);
+        updateEntry(date, sentences as [string, string, string], selectedImage || undefined, weather || undefined);
         toast.success(t.journal.messages.updated);
       } else {
-        addEntry(date, sentences as [string, string, string], selectedImage || undefined);
+        addEntry(date, sentences as [string, string, string], selectedImage || undefined, weather || undefined);
         toast.success(t.journal.messages.saved);
       }
     
@@ -123,11 +144,21 @@ export default function JournalModal({ isOpen, onClose, date }: JournalModalProp
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-800">
-                {existingEntry ? t.journal.title.view : t.journal.title.new}
-              </h2>
-            <p className="text-sm text-gray-500">{formatDate(date)}</p>
+          <div className="flex items-center gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">
+                  {existingEntry ? t.journal.title.view : t.journal.title.new}
+                </h2>
+              <p className="text-sm text-gray-500">{formatDate(date)}</p>
+            </div>
+            {weather && (
+              <div className="flex items-center gap-1">
+                <WeatherIcon condition={weather} size={20} />
+                {isLoadingWeather && (
+                  <div className="w-3 h-3 border border-gray-300 border-t-orange-500 rounded-full animate-spin ml-1"></div>
+                )}
+              </div>
+            )}
           </div>
           <button
             onClick={handleClose}
