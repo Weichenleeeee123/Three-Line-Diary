@@ -304,6 +304,22 @@ const translations = {
       version: 'v1.0',
       slogan: '简单记录，深度思考',
       description: '点击添加照片记录美好时刻'
+    },
+    
+    // 情绪图表
+    emotionChart: {
+      title: '情绪趋势分析',
+      positive: '积极',
+      neutral: '平静',
+      negative: '消极',
+      trendChart: '情绪变化趋势',
+      distributionChart: '情绪分布',
+      averageChart: '平均情绪',
+      trendImproving: '情绪趋势向好',
+      trendDeclining: '情绪有所下降',
+      trendStable: '情绪保持稳定',
+      noData: '暂无数据，开始写日记来分析你的情绪趋势吧！',
+      days: '天'
     }
   },
   
@@ -602,6 +618,22 @@ const translations = {
       version: 'v1.0',
       slogan: 'Simple recording, deep thinking',
       description: 'Click to add photos and capture beautiful moments'
+    },
+    
+    // Emotion Chart
+    emotionChart: {
+      title: 'Emotion Trend Analysis',
+      positive: 'Positive',
+      neutral: 'Neutral',
+      negative: 'Negative',
+      trendChart: 'Emotion Trend',
+      distributionChart: 'Emotion Distribution',
+      averageChart: 'Average Emotion',
+      trendImproving: 'Emotion trend improving',
+      trendDeclining: 'Emotion trend declining',
+      trendStable: 'Emotion remains stable',
+      noData: 'No data available. Start writing diary entries to analyze your emotion trends!',
+      days: 'days'
     }
   }
 };

@@ -43,6 +43,7 @@ Just three simple sentences, yet they capture a complete day's essence!
 - 📊 **Data management** - Support editing, deleting, and exporting diary entries
 - 🔍 **Search functionality** - Quickly find historical records
 - 📈 **Statistics analysis** - Track recording days, word count, and other metrics
+- 📊 **Emotion trend analysis** - Intelligently analyze diary emotion changes, visualize 7-day/30-day emotion trend charts
 
 </td>
 <td width="50%">
@@ -178,6 +179,7 @@ Intuitive calendar interface for easy browsing of historical records.
 - Statistics data
 - Language settings
 - Data management
+- Emotion trend analysis charts
 
 ## 🔧 Configuration
 

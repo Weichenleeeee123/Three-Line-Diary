@@ -22,6 +22,7 @@ import { generateMockData, clearAllData } from '@/utils/mockData';
 import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
 import AchievementModal from '@/components/AchievementModal';
+import EmotionTrendChart from '@/components/EmotionTrendChart';
 
 
 interface Achievement {
@@ -285,6 +286,9 @@ export default function Profile() {
           <div className="text-sm text-gray-600 font-medium">{t?.profile?.stats?.completionRate || '完成率'}</div>
         </div>
       </div>
+
+      {/* 情绪趋势分析 */}
+      <EmotionTrendChart className="mb-8" />
 
       {/* Achievements */}
       <div className="space-y-4">
