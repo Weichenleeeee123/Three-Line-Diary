@@ -1,11 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Share2, Bot, TrendingUp, Loader2, Sparkles, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Share2, Bot, TrendingUp, Loader2, Sparkles, RefreshCw, Download, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
 import useJournalStore from '@/hooks/useJournalStore';
 import { generateWeeklySummary, generateMoodInsight } from '@/services/geminiApi';
 import { useI18n } from '@/hooks/useI18n';
 import { cn } from '@/lib/utils';
 import TypewriterText from '@/components/TypewriterText';
+import { generateShareImage, downloadImage, shareImageToSocial } from '@/utils/shareImageGenerator';
 
 interface MoodAnalysis {
   positive: number;
@@ -86,6 +87,9 @@ export default function Summary() {
   const [isRefreshingMood, setIsRefreshingMood] = useState(false);
   const [summaryError, setSummaryError] = useState<string>('');
   const [moodError, setMoodError] = useState<string>('');
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string>('');
   
   const weekRange = useMemo(() => getWeekRange(currentWeekStart), [currentWeekStart]);
   
@@ -308,27 +312,63 @@ export default function Summary() {
     setCurrentWeekStart(newDate);
   };
   
-  const handleShare = async () => {
-    const shareText = `我的本周总结：\n\n${aiSummary || '正在生成中...'}\n\n来自三句话日记`;
+  const handleGenerateShareImage = async () => {
+    if (!aiSummary) {
+      toast.error('请等待AI总结生成完成');
+      return;
+    }
     
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: '我的周总结',
-          text: shareText
-        });
-      } catch (error) {
-        // User cancelled sharing
-      }
-    } else {
-      // Fallback to clipboard
-      try {
-        await navigator.clipboard.writeText(shareText);
-        toast.success(t?.summary?.copiedToClipboard || '总结已复制到剪贴板');
-      } catch (error) {
-        toast.error(t?.summary?.shareFailed || '分享失败');
+    setIsGeneratingImage(true);
+    try {
+      const shareData = {
+        weekRange: weekRangeText,
+        aiSummary,
+        moodInsight,
+        weekEntries,
+        moodAnalysis
+      };
+      
+      const imageDataUrl = await generateShareImage(shareData);
+      
+      // 显示全屏图片预览
+      setPreviewImageUrl(imageDataUrl);
+      setShowImagePreview(true);
+      
+      // 存储图片数据供后续使用
+      (window as any).currentShareImage = imageDataUrl;
+      
+      toast.success('分享图片生成成功！');
+    } catch (error) {
+      console.error('Failed to generate share image:', error);
+      toast.error('图片生成失败，请稍后重试');
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+  
+  const handleDownloadImage = () => {
+    const imageDataUrl = previewImageUrl || (window as any).currentShareImage;
+    if (imageDataUrl) {
+      const weekStart = weekRange.start.toISOString().split('T')[0];
+      downloadImage(imageDataUrl, `weekly-summary-${weekStart}.png`);
+      toast.success('图片已保存到下载文件夹');
+    }
+  };
+  
+  const handleShareToSocial = async () => {
+    const imageDataUrl = previewImageUrl || (window as any).currentShareImage;
+    if (imageDataUrl) {
+      const shareText = `我的本周总结 - ${weekRangeText}\n\n来自三句话日记`;
+      const shared = await shareImageToSocial(imageDataUrl, shareText);
+      if (!shared) {
+        toast.info('已为您下载图片，请手动分享到社交媒体');
       }
     }
+  };
+
+  const handleClosePreview = () => {
+    setShowImagePreview(false);
+    setPreviewImageUrl('');
   };
   
   const weekRangeText = language === 'zh' 
@@ -430,14 +470,20 @@ export default function Summary() {
             )}
             
             <div className="flex items-center justify-between">
-              <button
-                onClick={handleShare}
-                disabled={!aiSummary}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Share2 size={16} />
-                {t?.summary?.shareTitle || '分享总结'}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleGenerateShareImage}
+                  disabled={!aiSummary || isGeneratingImage}
+                  className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGeneratingImage ? (
+                    <Loader2 className="animate-spin" size={16} />
+                  ) : (
+                    <ImageIcon size={16} />
+                  )}
+                  {isGeneratingImage ? '生成中...' : '生成分享图片'}
+                </button>
+              </div>
               
               {!isLoadingSummary && aiSummary && weekEntries.length > 0 && (
                 <button
@@ -607,6 +653,63 @@ export default function Summary() {
                   </div>
                 );
               })}
+          </div>
+        </div>
+      )}
+
+      {/* 全屏图片预览模态框 */}
+      {showImagePreview && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+          onClick={handleClosePreview}
+        >
+          <div className="relative w-full h-full flex flex-col items-center justify-center max-w-sm mx-auto">
+            
+            {/* 图片显示容器 - 比手机边框还要小一圈 */}
+            <div className="relative flex-1 flex items-center justify-center w-full px-8">
+              <div className="relative">
+                {/* 关闭按钮 - 适当间距 */}
+                <button
+                  onClick={handleClosePreview}
+                  className="absolute top-3 right-3 p-1.5 bg-white bg-opacity-90 hover:bg-opacity-100 rounded-full text-gray-800 transition-all duration-300 z-10 shadow-lg"
+                >
+                  <X size={16} />
+                </button>
+                
+                <img
+                  src={previewImageUrl}
+                  alt="分享图片预览"
+                  className="w-full h-auto object-contain rounded-lg shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    maxWidth: 'calc(100vw - 80px)',
+                    maxHeight: 'calc(100vh - 200px)'
+                  }}
+                />
+                
+                {/* 操作按钮 - 适当间距 */}
+                <div 
+                  className="absolute -bottom-14 left-1/2 transform -translate-x-1/2 flex items-center gap-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={handleDownloadImage}
+                    className="w-10 h-10 bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-800 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 shadow-lg"
+                    title="保存图片"
+                  >
+                    <Download size={18} />
+                  </button>
+                  
+                  <button
+                    onClick={handleShareToSocial}
+                    className="w-10 h-10 bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-800 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 shadow-lg"
+                    title="分享图片"
+                  >
+                    <Share2 size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
