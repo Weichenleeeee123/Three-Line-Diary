@@ -1,10 +1,22 @@
 // Gemini API 服务
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+
+// 魔搭社区 API 配置（备用）
+const MODELSCOPE_API_KEY = import.meta.env.VITE_MODELSCOPE_API_KEY;
+const MODELSCOPE_API_URL = 'https://api-inference.modelscope.cn/v1/chat/completions';
+const MODELSCOPE_MODEL = 'Qwen/Qwen2.5-VL-72B-Instruct';
+
+// 重试配置
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 2000; // 2秒，给网络更多恢复时间
 
 // 检查API密钥是否配置
 if (!GEMINI_API_KEY) {
   console.warn('VITE_GEMINI_API_KEY is not configured. Gemini API features will use fallback responses.');
+}
+if (!MODELSCOPE_API_KEY) {
+  console.warn('VITE_MODELSCOPE_API_KEY is not configured. Backup API will not be available.');
 }
 
 interface JournalEntry {
@@ -24,6 +36,185 @@ function convertImageToGeminiFormat(base64Image: string) {
       data: base64Data
     }
   };
+}
+
+// 将base64图片转换为魔搭API需要的格式
+function convertImageToModelScopeFormat(base64Image: string) {
+  return {
+    type: "image_url",
+    image_url: {
+      url: base64Image
+    }
+  };
+}
+
+// 延迟函数
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// 检查是否为速率限制或网络错误
+function isRetryableError(error: any): boolean {
+  if (error.message && typeof error.message === 'string') {
+    const message = error.message.toLowerCase();
+    return message.includes('rate limit') || 
+           message.includes('429') || 
+           message.includes('503') || 
+           message.includes('502') || 
+           message.includes('network') ||
+           message.includes('timeout') ||
+           message.includes('failed to fetch') ||
+           message.includes('fetch error');
+  }
+  // TypeError通常是网络问题
+  if (error instanceof TypeError) {
+    return true;
+  }
+  return false;
+}
+
+// 魔搭社区API调用函数
+async function callModelScopeAPI(prompt: string, images: string[] = [], language: 'zh' | 'en' = 'zh'): Promise<string> {
+  if (!MODELSCOPE_API_KEY) {
+    throw new Error('ModelScope API key not configured');
+  }
+
+  const messages: any[] = [];
+  
+  // 构建消息内容
+  const content: any[] = [{ type: "text", text: prompt }];
+  
+  // 添加图片（最多3张）
+  if (images.length > 0) {
+    const imagesToInclude = images.slice(0, 3);
+    imagesToInclude.forEach(image => {
+      content.push(convertImageToModelScopeFormat(image));
+    });
+  }
+  
+  messages.push({
+    role: "user",
+    content: content
+  });
+
+  const response = await fetch(MODELSCOPE_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${MODELSCOPE_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: MODELSCOPE_MODEL,
+      messages: messages,
+      temperature: 0.7,
+      max_tokens: 1024
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`ModelScope API request failed: ${response.status}`);
+  }
+
+  const data = await response.json();
+  
+  if (data.choices && data.choices[0] && data.choices[0].message) {
+    return data.choices[0].message.content.trim();
+  } else {
+    throw new Error('Invalid ModelScope API response format');
+  }
+}
+
+// 带重试的API调用函数
+async function callAPIWithRetry(prompt: string, images: string[] = [], language: 'zh' | 'en' = 'zh'): Promise<string> {
+  let lastError: any;
+  
+  // 暂时注释掉Gemini API，演示时使用魔搭社区API
+  /*
+  // 首先尝试Gemini API
+  if (GEMINI_API_KEY) {
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        console.log(`Attempting Gemini API call (${attempt}/${MAX_RETRIES})`);
+        
+        // 构建请求内容，包含文本和图片
+        const parts: any[] = [{ text: prompt }];
+        
+        // 如果有图片，添加到请求中（最多3张图片以避免token限制）
+        if (images.length > 0) {
+          const imagesToInclude = images.slice(0, 3);
+          imagesToInclude.forEach(image => {
+            parts.push(convertImageToGeminiFormat(image));
+          });
+        }
+
+        const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: parts
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              topK: 40,
+              topP: 0.95,
+              maxOutputTokens: 1024,
+            }
+          }),
+          // 添加超时和错误处理
+          signal: AbortSignal.timeout(30000) // 30秒超时
+        });
+
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+          console.log('Gemini API call successful');
+          return data.candidates[0].content.parts[0].text.trim();
+        } else {
+          throw new Error('Invalid response format');
+        }
+      } catch (error) {
+        console.error(`Gemini API attempt ${attempt} failed:`, error);
+        lastError = error;
+        
+        // 如果是可重试的错误且还有重试次数，则等待后重试
+        if (isRetryableError(error) && attempt < MAX_RETRIES) {
+          console.log(`Waiting ${RETRY_DELAY}ms before retry...`);
+          await delay(RETRY_DELAY);
+          continue;
+        }
+        
+        // 如果不是可重试的错误或已达到最大重试次数，跳出循环
+        break;
+      }
+    }
+  }
+  */
+  
+  // 直接使用魔搭社区API（演示用）
+  if (MODELSCOPE_API_KEY) {
+    try {
+      console.log('使用魔搭社区API...');
+      const result = await callModelScopeAPI(prompt, images, language);
+      console.log('魔搭社区API调用成功');
+      return result;
+    } catch (error) {
+      console.error('魔搭社区API调用失败:', error);
+      lastError = error;
+    }
+  }
+  
+  // 如果魔搭API也失败，抛出错误
+  throw new Error(language === 'zh' 
+    ? 'AI服务暂时不可用，请稍后重试'
+    : 'AI service is temporarily unavailable, please try again later'
+  );
 }
 
 export async function generateWeeklySummary(entries: JournalEntry[], language: 'zh' | 'en' = 'zh'): Promise<string> {
@@ -111,50 +302,12 @@ Please generate the weekly summary:`;
   }
 
   try {
-    // 构建请求内容，包含文本和图片
-    const parts: any[] = [{ text: prompt }];
-    
-    // 如果有图片，添加到请求中（最多3张图片以避免token限制）
-    if (images.length > 0) {
-      const imagesToInclude = images.slice(0, 3);
-      imagesToInclude.forEach(image => {
-        parts.push(convertImageToGeminiFormat(image));
-      });
-    }
-
-    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: parts
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        }
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-      return data.candidates[0].content.parts[0].text.trim();
-    } else {
-      throw new Error('Invalid response format');
-    }
+    // 使用带重试和备用API的调用函数
+    return await callAPIWithRetry(prompt, images, language);
   } catch (error) {
-    console.error('Gemini API error:', error);
+    console.error('AI API error:', error);
     
-    // 如果有API密钥但调用失败，抛出错误让上层处理
+    // 如果所有API都失败，抛出错误让上层处理
     throw new Error(language === 'zh' 
       ? 'AI总结生成失败，请检查网络连接或稍后重试'
       : 'AI summary generation failed, please check your network connection or try again later'
@@ -206,56 +359,18 @@ Diary content: ${journalContent}
 
 Please generate emotional insights:`;
 
-  // 如果没有配置API密钥，直接返回fallback响应
-  if (!GEMINI_API_KEY) {
+  // 如果没有配置任何API密钥，直接返回fallback响应
+  if (!GEMINI_API_KEY && !MODELSCOPE_API_KEY) {
     return language === 'zh'
       ? '你这周的记录很棒！继续保持记录的习惯，让AI更好地了解你的情绪变化。'
       : 'Your records this week are great! Keep up the recording habit to help AI better understand your emotional changes.';
   }
 
   try {
-    // 构建请求内容，包含文本和图片
-    const parts: any[] = [{ text: prompt }];
-    
-    // 如果有图片，添加到请求中（最多2张图片以避免token限制）
-    if (images.length > 0) {
-      const imagesToInclude = images.slice(0, 2);
-      imagesToInclude.forEach(image => {
-        parts.push(convertImageToGeminiFormat(image));
-      });
-    }
-
-    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: parts
-        }],
-        generationConfig: {
-          temperature: 0.8,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 512,
-        }
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-      return data.candidates[0].content.parts[0].text.trim();
-    } else {
-      throw new Error('Invalid response format');
-    }
+    // 使用带重试和备用API的调用函数
+    return await callAPIWithRetry(prompt, images, language);
   } catch (error) {
-    console.error('Gemini API error:', error);
+    console.error('AI API error:', error);
     return language === 'zh'
       ? '你这周的记录很棒！继续保持记录的习惯，让AI更好地了解你的情绪变化。'
       : 'Your records this week are great! Keep up the recording habit to help AI better understand your emotional changes.';
@@ -264,10 +379,10 @@ Please generate emotional insights:`;
 
 // 分析单张图片的内容和情绪
 export async function analyzeImage(imageBase64: string, language: 'zh' | 'en' = 'zh'): Promise<string> {
-  if (!GEMINI_API_KEY) {
+  if (!GEMINI_API_KEY && !MODELSCOPE_API_KEY) {
     return language === 'zh'
-      ? '图片分析功能需要配置Gemini API密钥。'
-      : 'Image analysis requires Gemini API key configuration.';
+      ? '图片分析功能需要配置API密钥。'
+      : 'Image analysis requires API key configuration.';
   }
 
   const prompt = language === 'zh'
@@ -291,40 +406,10 @@ export async function analyzeImage(imageBase64: string, language: 'zh' | 'en' = 
 Please analyze this photo:`;
 
   try {
-    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: prompt },
-            convertImageToGeminiFormat(imageBase64)
-          ]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 256,
-        }
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`API request failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-      return data.candidates[0].content.parts[0].text.trim();
-    } else {
-      throw new Error('Invalid response format');
-    }
+    // 使用带重试和备用API的调用函数
+    return await callAPIWithRetry(prompt, [imageBase64], language);
   } catch (error) {
-    console.error('Gemini API error:', error);
+    console.error('AI API error:', error);
     return language === 'zh'
       ? '这是一张很棒的照片！记录生活的美好瞬间总是让人感到温暖。'
       : 'This is a wonderful photo! Capturing beautiful moments of life always feels heartwarming.';

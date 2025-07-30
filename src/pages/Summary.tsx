@@ -17,10 +17,14 @@ interface MoodAnalysis {
 function getWeekRange(date: Date): { start: Date; end: Date } {
   const start = new Date(date);
   const day = start.getDay();
-  start.setDate(start.getDate() - day);
+  // 修复：以周一为一周的开始，与currentWeekStart的计算保持一致
+  const diff = day === 0 ? -6 : 1 - day;
+  start.setDate(start.getDate() + diff);
+  start.setHours(0, 0, 0, 0);
   
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
   
   return { start, end };
 }
@@ -116,20 +120,44 @@ export default function Summary() {
 
   // 从本地存储加载AI总结
   useEffect(() => {
+    console.log('🔍 AI总结useEffect触发:', {
+      weekRangeStart: weekRange.start.toISOString().split('T')[0],
+      weekEntriesLength: weekEntries.length,
+      weekEntries: weekEntries.map(e => ({
+        id: e.id,
+        date: e.date,
+        sentencesCount: e.sentences.filter(s => s.trim().length > 0).length,
+        hasImage: !!e.image
+      }))
+    });
+    
     const weekStartStr = weekRange.start.toISOString().split('T')[0];
     const storageKey = getStorageKey('summary', weekStartStr);
     
     try {
       const stored = localStorage.getItem(storageKey);
       if (stored) {
+        console.log('📦 找到缓存的AI总结');
         const { summary, timestamp, entriesHash } = JSON.parse(stored);
         const currentEntriesHash = JSON.stringify(weekEntries.map(e => ({ id: e.id, sentences: e.sentences, image: e.image })));
         
+        console.log('🔄 检查缓存有效性:', {
+          isDataStale: isDataStale(timestamp),
+          entriesHashMatch: entriesHash === currentEntriesHash,
+          cachedTimestamp: new Date(timestamp).toLocaleString(),
+          currentTime: new Date().toLocaleString()
+        });
+        
         // 如果数据没有过期且条目没有变化，使用缓存的总结
         if (!isDataStale(timestamp) && entriesHash === currentEntriesHash) {
+          console.log('✅ 使用缓存的AI总结');
           setAiSummary(summary);
           return;
+        } else {
+          console.log('❌ 缓存已过期或数据已变化，需要重新生成');
         }
+      } else {
+        console.log('📭 没有找到缓存的AI总结');
       }
     } catch (error) {
       console.error('Failed to load cached summary:', error);
@@ -137,8 +165,10 @@ export default function Summary() {
     
     // 如果没有缓存或缓存过期，生成新的总结
     if (weekEntries.length > 0) {
+      console.log('🚀 开始生成新的AI总结，weekEntries数量:', weekEntries.length);
       generateAISummary();
     } else {
+      console.log('📝 没有日记记录，清空AI总结');
       setAiSummary('');
     }
   }, [weekRange.start, weekEntries]);
@@ -175,16 +205,40 @@ export default function Summary() {
 
   // 生成AI总结
   const generateAISummary = async () => {
+    console.log('📝 generateAISummary函数被调用');
+    console.log('📊 当前weekEntries详情:', {
+      length: weekEntries.length,
+      entries: weekEntries.map(entry => ({
+        id: entry.id,
+        date: entry.date,
+        sentences: entry.sentences,
+        validSentences: entry.sentences.filter(s => s.trim().length > 0),
+        hasImage: !!entry.image
+      }))
+    });
+    
     if (weekEntries.length === 0) {
+      console.log('❌ weekEntries为空，清空AI总结');
       setAiSummary('');
       setSummaryError('');
       return;
     }
     
+    console.log('🚀 开始生成AI总结，设置loading状态');
     setIsLoadingSummary(true);
     setSummaryError('');
+    
     try {
+      console.log('📡 准备调用generateWeeklySummary API');
+      console.log('🌐 使用的语言:', language);
+      console.log('📝 传递给API的entries数量:', weekEntries.length);
+      
       const summary = await generateWeeklySummary(weekEntries, language);
+      
+      console.log('✅ AI总结生成成功!');
+      console.log('📄 生成的总结内容:', summary);
+      console.log('📏 总结长度:', summary.length);
+      
       setAiSummary(summary);
       setSummaryError('');
       
@@ -198,12 +252,21 @@ export default function Summary() {
         timestamp: Date.now(),
         entriesHash
       }));
+      console.log('💾 AI总结已保存到缓存，key:', storageKey);
+      
     } catch (error) {
-      console.error('Failed to generate AI summary:', error);
+      console.error('❌ AI总结生成失败，错误详情:', error);
+      console.error('🔍 错误类型:', typeof error);
+      console.error('📝 错误消息:', error instanceof Error ? error.message : String(error));
+      console.error('📚 错误堆栈:', error instanceof Error ? error.stack : 'No stack trace');
+      
       const errorMessage = error instanceof Error ? error.message : (t?.summary?.summaryGenerationFailed || 'AI总结生成失败，请稍后重试');
+      console.log('⚠️ 设置错误消息:', errorMessage);
+      
       setSummaryError(errorMessage);
       setAiSummary('');
     } finally {
+      console.log('🏁 AI总结生成流程结束，取消loading状态');
       setIsLoadingSummary(false);
     }
   };

@@ -111,9 +111,46 @@ export default function Profile() {
   // Calculate achievements
   const achievements = getAchievements(t);
 
-  // 检查新成就
+  // 检查新成就 - 原始逻辑（演示期间注释）
+  // useEffect(() => {
+  //   const checkForNewAchievements = () => {
+  //     const unlockedAchievements = achievements.filter(achievement => {
+  //       let unlocked = false;
+  //       
+  //       switch (achievement.type) {
+  //         case 'days':
+  //           unlocked = stats.totalDays >= achievement.requirement;
+  //           break;
+  //         case 'streak':
+  //           unlocked = stats.currentStreak >= achievement.requirement || stats.longestStreak >= achievement.requirement;
+  //           break;
+  //         case 'sentences':
+  //           unlocked = stats.totalSentences >= achievement.requirement;
+  //           break;
+  //       }
+  //       
+  //       return unlocked;
+  //     });
+
+  //     for (const achievement of unlockedAchievements) {
+  //       if (!hasShownAchievements.has(achievement.id)) {
+  //         setNewAchievement(achievement);
+  //         setShowAchievementModal(true);
+  //         const newShownSet = new Set([...hasShownAchievements, achievement.id]);
+  //         setHasShownAchievements(newShownSet);
+  //         localStorage.setItem('shownAchievements', JSON.stringify([...newShownSet]));
+  
+  //         break; // 一次只显示一个成就
+  //       }
+  //     }
+  //   };
+
+  //   checkForNewAchievements();
+  // }, [entries, hasShownAchievements, achievements, stats]);
+
+  // 演示用：每次进入Profile界面都弹出成就提示
   useEffect(() => {
-    const checkForNewAchievements = () => {
+    const showDemoAchievement = () => {
       const unlockedAchievements = achievements.filter(achievement => {
         let unlocked = false;
         
@@ -132,21 +169,17 @@ export default function Profile() {
         return unlocked;
       });
 
-      for (const achievement of unlockedAchievements) {
-        if (!hasShownAchievements.has(achievement.id)) {
-          setNewAchievement(achievement);
-          setShowAchievementModal(true);
-          const newShownSet = new Set([...hasShownAchievements, achievement.id]);
-          setHasShownAchievements(newShownSet);
-          localStorage.setItem('shownAchievements', JSON.stringify([...newShownSet]));
-  
-          break; // 一次只显示一个成就
-        }
+      // 为演示目的，总是显示第一个已解锁的成就
+      if (unlockedAchievements.length > 0) {
+        setNewAchievement(unlockedAchievements[0]);
+        setShowAchievementModal(true);
       }
     };
 
-    checkForNewAchievements();
-  }, [entries, hasShownAchievements, achievements, stats]);
+    // 延迟一点时间以确保页面加载完成
+    const timer = setTimeout(showDemoAchievement, 500);
+    return () => clearTimeout(timer);
+  }, []); // 空依赖数组，只在组件挂载时执行一次
   const unlockedAchievements = achievements.map(achievement => {
     let unlocked = false;
     
