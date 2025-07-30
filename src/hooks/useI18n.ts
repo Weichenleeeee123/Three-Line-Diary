@@ -3,10 +3,30 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 export type Language = 'zh' | 'en';
 
+// 检测浏览器语言
+const detectBrowserLanguage = (): Language => {
+  // 获取浏览器语言设置
+  const browserLang = navigator.language || navigator.languages?.[0] || 'zh-CN';
+  
+  // 检查是否为中文
+  if (browserLang.startsWith('zh')) {
+    return 'zh';
+  }
+  
+  // 检查是否为英文
+  if (browserLang.startsWith('en')) {
+    return 'en';
+  }
+  
+  // 默认返回中文
+  return 'zh';
+};
+
 interface I18nStore {
   language: Language;
   setLanguage: (language: Language) => void;
   t: typeof translations.zh;
+  isAutoDetected: boolean;
 }
 
 const translations = {
@@ -161,6 +181,7 @@ const translations = {
       dailyReminderDesc: '提醒你每天记录',
       languageSettings: '语言设置',
       languageSettingsDesc: '选择应用语言',
+      autoDetected: '已自动检测浏览器语言',
       dataBackup: '数据备份',
       dataBackupDesc: '导出你的日记数据',
       importData: '导入数据',
@@ -485,6 +506,7 @@ const translations = {
       dailyReminderDesc: 'Remind you to record daily',
       languageSettings: 'Language Settings',
       languageSettingsDesc: 'Choose app language',
+      autoDetected: 'Auto-detected from browser language',
       dataBackup: 'Data Backup',
       dataBackupDesc: 'Export your diary data',
       importData: 'Import Data',
@@ -659,16 +681,24 @@ const translations = {
 };
 
 export const useI18n = create<I18nStore>()(persist(
-  (set, get) => ({
-    language: 'zh',
-    setLanguage: (language: Language) => {
-      set({ 
-        language,
-        t: translations[language]
-      });
-    },
-    t: translations.zh,
-  }),
+  (set, get) => {
+    // 检测是否为首次访问（没有存储的语言设置）
+    const isFirstVisit = !localStorage.getItem('i18n-storage');
+    const detectedLanguage = isFirstVisit ? detectBrowserLanguage() : 'zh';
+    
+    return {
+      language: detectedLanguage,
+      isAutoDetected: isFirstVisit,
+      setLanguage: (language: Language) => {
+        set({ 
+          language,
+          t: translations[language],
+          isAutoDetected: false
+        });
+      },
+      t: translations[detectedLanguage],
+    };
+  },
   {
     name: 'i18n-storage',
     storage: createJSONStorage(() => localStorage),
@@ -676,6 +706,16 @@ export const useI18n = create<I18nStore>()(persist(
       if (state) {
         // 重新设置翻译对象
         state.t = translations[state.language];
+        
+        // 如果是首次访问且没有手动设置过语言，则检测浏览器语言
+        if (!state.isAutoDetected && !localStorage.getItem('i18n-storage')) {
+          const detectedLang = detectBrowserLanguage();
+          if (detectedLang !== state.language) {
+            state.language = detectedLang;
+            state.t = translations[detectedLang];
+            state.isAutoDetected = true;
+          }
+        }
       }
     },
   }

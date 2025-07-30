@@ -104,7 +104,7 @@ export default function Profile() {
     return stored ? new Set(JSON.parse(stored)) : new Set();
   });
   const { entries, getStats, deleteEntry, deleteAllEntries } = useJournalStore();
-  const { t, language, setLanguage } = useI18n();
+  const { t, language, setLanguage, isAutoDetected } = useI18n();
   
   const stats = getStats();
   
@@ -405,6 +405,12 @@ export default function Profile() {
               <div>
                 <h3 className="font-medium text-gray-800">{t?.profile?.languageSettings || '语言设置'}</h3>
                 <p className="text-sm text-gray-600">{t?.profile?.languageSettingsDesc || '选择应用语言'}</p>
+                {isAutoDetected && (
+                  <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                    {t?.profile?.autoDetected || '已自动检测浏览器语言'}
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex gap-2">
