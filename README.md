@@ -184,12 +184,26 @@ npm run check
 ### 首页 - 三句话输入
 简洁的输入界面，每日一句励志语录激发灵感。
 
+<div align="center">
+  <img src="./images/首页1.png" alt="首页界面1" width="300">
+  <img src="./images/首页2.png" alt="首页界面2" width="300">
+</div>
+
 ### 日历视图
 直观的日历界面，轻松查看历史记录。
+
+<div align="center">
+  <img src="./images/日历.png" alt="日历视图" width="300">
+</div>
 
 ### AI智能总结
 - **周报生成**：自动分析一周的记录，生成深度总结
 - **心情洞察**：AI分析情感变化，提供个性化建议
+
+<div align="center">
+  <img src="./images/总结1.png" alt="AI总结界面1" width="300">
+  <img src="./images/总结2.png" alt="AI总结界面2" width="300">
+</div>
 
 ### 个人中心
 - 成就展示
@@ -197,6 +211,23 @@ npm run check
 - 语言设置
 - 数据管理
 - 情绪趋势分析图表
+
+<div align="center">
+  <img src="./images/我的1.png" alt="个人中心1" width="300">
+  <img src="./images/我的2.png" alt="个人中心2" width="300">
+</div>
+
+<div align="center">
+  <img src="./images/我的3.png" alt="个人中心3" width="300">
+  <img src="./images/我的4.png" alt="个人中心4" width="300">
+</div>
+
+### 多语言支持
+完整的中英文界面切换，提供本地化体验。
+
+<div align="center">
+  <img src="./images/i18n支持.png" alt="多语言支持" width="300">
+</div>
 
 ## 🔧 配置说明
 

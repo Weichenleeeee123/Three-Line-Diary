@@ -168,12 +168,26 @@ npm run check
 ### Homepage - Three-sentence Input
 Clean input interface with daily inspirational quotes to spark creativity.
 
+<div align="center">
+  <img src="./images/首页1.png" alt="Homepage Interface 1" width="300">
+  <img src="./images/首页2.png" alt="Homepage Interface 2" width="300">
+</div>
+
 ### Calendar View
 Intuitive calendar interface for easy browsing of historical records.
+
+<div align="center">
+  <img src="./images/日历.png" alt="Calendar View" width="300">
+</div>
 
 ### AI Smart Summary
 - **Weekly Reports**: Automatically analyze weekly records, generate deep summaries
 - **Mood Insights**: AI analyzes emotional changes, provides personalized suggestions
+
+<div align="center">
+  <img src="./images/总结1.png" alt="AI Summary Interface 1" width="300">
+  <img src="./images/总结2.png" alt="AI Summary Interface 2" width="300">
+</div>
 
 ### Profile Center
 - Achievement showcase
@@ -181,6 +195,23 @@ Intuitive calendar interface for easy browsing of historical records.
 - Language settings
 - Data management
 - Emotion trend analysis charts
+
+<div align="center">
+  <img src="./images/我的1.png" alt="Profile Center 1" width="300">
+  <img src="./images/我的2.png" alt="Profile Center 2" width="300">
+</div>
+
+<div align="center">
+  <img src="./images/我的3.png" alt="Profile Center 3" width="300">
+  <img src="./images/我的4.png" alt="Profile Center 4" width="300">
+</div>
+
+### Multi-language Support
+Complete Chinese/English interface switching for localized experience.
+
+<div align="center">
+  <img src="./images/i18n支持.png" alt="Multi-language Support" width="300">
+</div>
 
 ## 🔧 Configuration
 
