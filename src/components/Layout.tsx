@@ -51,6 +51,29 @@ export default function Layout({ children }: LayoutProps) {
         <div className="absolute right-[-4px] top-[170px] w-1 h-12 bg-gray-800 rounded-l-sm"></div>
         <div className="absolute right-[-4px] top-[200px] w-1 h-12 bg-gray-800 rounded-l-sm"></div>
         <div className="absolute left-[-4px] top-[160px] w-1 h-16 bg-gray-800 rounded-r-sm"></div>
+        
+        {/* Footer Attribution - 放在手机边框下方 */}
+        <div className="absolute top-[820px] left-1/2 transform -translate-x-1/2 text-center text-xs text-gray-600 space-y-1 w-[375px]">
+          <div>Made in CodeBuddy | Powered by CloudBase</div>
+          <div className="flex justify-center space-x-4">
+            <a 
+              href="https://mc.tencent.com/HRVjVcS5" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-orange-500 transition-colors underline"
+            >
+              CodeBuddy外链地址
+            </a>
+            <a 
+              href="https://docs.cloudbase.net/ai/cloudbase-ai-toolkit/?from=csdn-hackathon-2025" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-orange-500 transition-colors underline"
+            >
+              CloudBase外链地址
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );
