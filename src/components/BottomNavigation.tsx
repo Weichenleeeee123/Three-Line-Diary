@@ -26,44 +26,49 @@ export default function BottomNavigation() {
   };
 
   return (
-    <div className="bg-white border-t border-gray-200 px-4 py-2 flex-shrink-0 slide-in-up">
-      <div className="flex justify-around items-center max-w-md mx-auto">
-        {navigationItems.map(({ path, icon: Icon, label }) => {
-          const isActive = location.pathname === path;
-          const isClicked = clickedItem === path;
-          
-          return (
-            <button
-              key={path}
-              onClick={() => handleNavClick(path)}
-              className={cn(
-                "flex flex-col items-center py-2 px-3 rounded-lg transition-all duration-300 min-w-[44px] min-h-[44px] justify-center relative",
-                isActive 
-                  ? "text-orange-500 bg-orange-50 scale-105" 
-                  : "text-gray-600 hover:text-orange-400 hover:bg-gray-50",
-                isClicked ? "button-press" : ""
-              )}
-            >
-              <Icon 
-                size={20} 
+    <div className="flex justify-center pb-6 px-4 flex-shrink-0">
+      {/* 真正浮空的椭圆形导航栏 */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-full px-6 py-3 shadow-2xl border border-white/10 slide-in-up">
+        <div className="flex items-center space-x-8">
+          {navigationItems.map(({ path, icon: Icon, label }) => {
+            const isActive = location.pathname === path;
+            const isClicked = clickedItem === path;
+            
+            return (
+              <button
+                key={path}
+                onClick={() => handleNavClick(path)}
                 className={cn(
-                  "mb-1 transition-all duration-300",
-                  isActive ? "icon-bounce" : "",
-                  isClicked ? "scale-90" : ""
-                )} 
-              />
-              <span className={cn(
-                "text-xs font-medium transition-all duration-300",
-                isActive ? "text-glow" : ""
-              )}>
-                {label}
-              </span>
-              {isActive && (
-                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-orange-500 rounded-full pulse" />
-              )}
-            </button>
-          );
-        })}
+                  "flex flex-col items-center transition-all duration-300 min-w-[44px] min-h-[44px] justify-center relative group",
+                  isActive 
+                    ? "text-orange-500 scale-110" 
+                    : "text-gray-400 hover:text-gray-600 hover:scale-105",
+                  isClicked ? "button-press" : ""
+                )}
+              >
+                {/* 活跃状态背景 */}
+                {isActive && (
+                  <div className="absolute inset-0 bg-orange-200/60 rounded-full scale-125 opacity-90 pulse" />
+                )}
+                
+                <Icon 
+                  size={22} 
+                  className={cn(
+                    "mb-1 transition-all duration-300 relative z-10",
+                    isActive ? "icon-bounce" : "",
+                    isClicked ? "scale-90" : ""
+                  )} 
+                />
+                <span className={cn(
+                  "text-xs font-medium transition-all duration-300 relative z-10",
+                  isActive ? "text-glow font-semibold" : ""
+                )}>
+                  {label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

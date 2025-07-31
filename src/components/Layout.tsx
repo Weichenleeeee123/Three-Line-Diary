@@ -38,10 +38,15 @@ export default function Layout({ children }: LayoutProps) {
             
             {/* 应用内容区域 */}
             <div className="flex-1 flex flex-col overflow-hidden relative">
-              <main className="flex-1 bg-white overflow-auto">
+              <main className="flex-1 bg-white overflow-auto pb-24">
                 {children}
               </main>
-              <BottomNavigation />
+              {/* 浮空导航栏 */}
+              <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
+                <div className="pointer-events-auto">
+                  <BottomNavigation />
+                </div>
+              </div>
             </div>
           </div>
         </div>
